@@ -17,9 +17,11 @@ return new class extends Migration
             $table->string('slug');
             $table->string('image')->nullable();
             $table->text('short_description')->nullable();
+            $table->enum('type', ['simple', 'customizable'])->default('simple');
             $table->text('description')->nullable();
             $table->decimal('price', 8, 2);
             $table->decimal('offer_price', 8, 2);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignId('category_id')->constrained()->onDelete('restrict')->onUpdate('cascade');
             $table->timestamps();
         });
