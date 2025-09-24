@@ -16,6 +16,8 @@ class OtpController extends Controller
 
         $otp = rand(1000, 9999);
 
+
+
         // Send OTP via Email
         Mail::to($request->email)->send(new OtpMail($otp));
 
