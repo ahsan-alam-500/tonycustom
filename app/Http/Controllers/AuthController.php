@@ -26,11 +26,8 @@ class AuthController extends Controller
                 'password' => ['required', 'string', 'min:8'],
                 'phone'    => ['nullable', 'string', 'max:20'],
                 'address'  => ['nullable', 'string', 'max:255'],
-                'avatar'   => ['nullable', 'string', 'max:255'],
                 'role'   => ['nullable', 'string', 'max:255'],
-                'avatar'   => ['nullable', 'string', 'max:255'],
             ]);
-
 
             $user = User::create([
                 'name'           => $data['name'],
@@ -39,7 +36,6 @@ class AuthController extends Controller
                 'role'           => $data['role'] ?? 'Customer',
                 'phone'          => $data['phone'] ?? null,
                 'address'        => $data['address'] ?? null,
-                'avatar'         => $data['avatar'] ?? null,
                 'remember_token' => \Str::random(10),
             ]);
 
