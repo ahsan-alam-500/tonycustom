@@ -17,4 +17,16 @@ class ProfileController extends Controller
             'data' => ['user' => $user]
         ], 200);
     }
+
+    public function update(Request $request, $id)
+    {
+        $user = User::find($id);
+        $user->update($request->all());
+        return response()->json([
+            'success' => true,
+            'status' => 200,
+            'message' => 'Profile updated successfully',
+            'data' => ['user' => $user]
+        ], 200);
+    }
 }

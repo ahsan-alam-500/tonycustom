@@ -19,11 +19,11 @@ class User extends Authenticatable implements JWTSubject
         'phone',
         'address',
         'avatar',
-        'otp',
-        'otp_varified',
     ];
 
     protected $hidden = [
+        'otp',
+        'otp_varified',
         'password',
         'remember_token',
     ];
