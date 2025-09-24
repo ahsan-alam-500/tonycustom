@@ -85,7 +85,7 @@ class OtpController extends Controller
         // Update password
         $user = User::where('email', $request->email)->first();
 
-        if ($user->otp_varified != true) {
+        if ($user->otp_varified == true) {
 
         $user->password = Hash::make($request->password);
         $user->otp_varified = false;
