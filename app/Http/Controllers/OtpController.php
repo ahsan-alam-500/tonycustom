@@ -97,8 +97,6 @@ class OtpController extends Controller
             'message' => 'Password reset successfully',
         ]);
         }
-
-
         return response()->json([
             'success' => false,
             'status'  => 401,
