@@ -19,10 +19,10 @@ class CategoryController extends Controller
         try {
             $categories = Category::orderBy('id', 'desc')->get();
 
-        $baseUrl = url('/public/');
+        $baseUrl = url('/public');
         $categories->transform(function ($category) use ($baseUrl) {
             if (!empty($category->image)) {
-                $category->image = $baseUrl . 'storage/' . ltrim($category->image, '/');
+                $category->image = $baseUrl .'/'. 'storage/' . ltrim($category->image, '/');
             }
             return $category;
         });
