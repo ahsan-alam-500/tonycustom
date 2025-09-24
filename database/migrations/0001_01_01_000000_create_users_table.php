@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('avatar')->nullable();
             $table->string('password');
             $table->string('otp')->nullable();
-            $table->timestamp('otp_varified')->default(0)->nullable();
+            $table->boolean('otp_varified')->default(0)->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

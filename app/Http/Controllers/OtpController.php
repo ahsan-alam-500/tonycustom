@@ -20,18 +20,19 @@ class OtpController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if ($user->count() > 0) {
-        // Send OTP via Email
-        Mail::to($request->email)->send(new OtpMail($otp));
+        if ($user) {
+            // Send OTP via Email
+            Mail::to($request->email)->send(new OtpMail($otp));
             $user->otp = $otp;
             $user->save();
-        }else {
+        } else {
             return response()->json([
                 'success' => false,
                 'status' => 404,
                 'message' => 'User not found',
             ]);
         }
+
 
 
 
