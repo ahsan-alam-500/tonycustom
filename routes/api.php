@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OtpController;
 use App\Http\Controllers\Product\CategoryController;
 use App\Http\Controllers\Product\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -8,6 +9,7 @@ use App\Http\Controllers\AuthController;
 // Public routes
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login',    [AuthController::class, 'login']);
+Route::post('forgotpass',      [OtpController::class, 'otpSender']);
 
 // Protected routes
 Route::middleware('auth:api')->group(function () {
