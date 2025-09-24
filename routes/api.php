@@ -10,6 +10,7 @@ use App\Http\Controllers\AuthController;
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login',    [AuthController::class, 'login']);
 Route::post('forgotpass',      [OtpController::class, 'otpSender']);
+Route::post('verify',      [OtpController::class, 'verifyOtp']);
 
 // Protected routes
 Route::middleware('auth:api')->group(function () {
