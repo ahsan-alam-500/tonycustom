@@ -31,7 +31,6 @@ class AuthController extends Controller
                 'avatar'   => ['nullable', 'string', 'max:255'],
             ]);
 
-            return $data;
 
             $user = User::create([
                 'name'           => $data['name'],
