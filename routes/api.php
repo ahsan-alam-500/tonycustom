@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Product\CategoryController;
+use App\Http\Controllers\Product\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
@@ -19,6 +20,7 @@ Route::middleware('auth:api')->group(function () {
 //============================Admin can handle==========================
 //======================================================================
 Route::apiResource('categories',CategoryController::class);
+Route::apiResource('products',ProductController::class);
 
 
 
