@@ -34,7 +34,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
+        if (!Auth::check() || Auth::user()->role !== 'Admin') {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
