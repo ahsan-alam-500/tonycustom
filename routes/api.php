@@ -16,7 +16,7 @@ Route::post('resetpass',      [OtpController::class, 'resetPassword']);
 
 
 //Profile
-Route::get('profile',[ProfileController::class, 'profile']);
+Route::get('profile/{id}',[ProfileController::class, 'profile']);
 
 // Protected routes
 Route::middleware('auth:api')->group(function () {
