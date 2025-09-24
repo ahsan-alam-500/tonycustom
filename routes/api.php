@@ -11,6 +11,7 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login',    [AuthController::class, 'login']);
 Route::post('forgotpass',      [OtpController::class, 'otpSender']);
 Route::post('verify',      [OtpController::class, 'verifyOtp']);
+Route::post('resetpass',      [OtpController::class, 'resetPassword']);
 
 // Protected routes
 Route::middleware('auth:api')->group(function () {
