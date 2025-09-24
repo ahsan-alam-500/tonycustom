@@ -79,7 +79,7 @@ class OtpController extends Controller
     {
         $request->validate([
             'email'    => 'required|email|exists:users,email',
-            'password' => 'required|min:6|confirmed', // password_confirmation needed
+            'password' => 'required|min:6',
         ]);
 
 
