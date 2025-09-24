@@ -27,6 +27,8 @@ class AuthController extends Controller
                 'phone'    => ['nullable', 'string', 'max:20'],
                 'address'  => ['nullable', 'string', 'max:255'],
                 'avatar'   => ['nullable', 'string', 'max:255'],
+                'role'   => ['nullable', 'string', 'max:255'],
+                'avatar'   => ['nullable', 'string', 'max:255'],
             ]);
 
             return $data;
