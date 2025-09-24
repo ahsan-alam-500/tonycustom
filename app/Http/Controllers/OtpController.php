@@ -20,7 +20,7 @@ class OtpController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if ($user-count() > 0) {
+        if ($user->count() > 0) {
             $user->otp = $otp;
             $user->save();
         }else {
