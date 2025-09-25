@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contact;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
     public function index()
     {
-        $contacts = contact::orderBy('id', 'desc')->get();
+        $contacts = Contact::orderBy('id', 'desc')->get();
         return response()->json([
             'success' => true,
             'status'  => 200,
@@ -16,6 +17,21 @@ class ContactController extends Controller
             'data'=>[
                 'contacts'=>$contacts
             ],
-        ])
+        ]);
     }
+
+    public function store(Request $request)
+    {
+        $contact = Contact::create($request->all());
+        return response()->json([
+            'success' => true,
+            'status'  => 200,
+            'message' => 'Contact sent successfully',
+            'data'=>[
+                'contact'=>$contact
+            ],
+        ]);
+    }
+
+
 }
