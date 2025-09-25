@@ -48,7 +48,7 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
-            'image' => 'nullable|string', // base64 image
+            'image' => 'nullable|string',
             'skin_tones' => 'sometimes|array',
             'hairs' => 'sometimes|array',
             'noses' => 'sometimes|array',
