@@ -6,6 +6,7 @@ use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
 
 // Public routes
 Route::post('register', [AuthController::class, 'register']);
@@ -56,3 +57,10 @@ Route::get('contact', function ($id) {
 
 
 });
+
+//=============================================================
+//====================public routes============================
+//====================public routes============================
+//=============================================================
+
+Route::post('contact', [ContactController::class, 'store']);
