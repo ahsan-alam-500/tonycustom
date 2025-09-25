@@ -49,6 +49,7 @@ class ProductController extends Controller
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
             'image' => 'nullable|string',
+            'base_cards' => 'sometimes|array',
             'skin_tones' => 'sometimes|array',
             'hairs' => 'sometimes|array',
             'noses' => 'sometimes|array',
@@ -56,7 +57,6 @@ class ProductController extends Controller
             'mouths' => 'sometimes|array',
             'dresses' => 'sometimes|array',
             'crowns' => 'sometimes|array',
-            'base_cards' => 'sometimes|array',
             'beards' => 'sometimes|array',
         ]);
 
