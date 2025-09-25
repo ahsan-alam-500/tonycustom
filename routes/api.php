@@ -50,9 +50,7 @@ Route::apiResource('products',ProductController::class);
 //=========================Contact us===================================
 //======================================================================
 
-Route::get('contact', function ($id) {
-
-});
+Route::get('contact', [ContactController::class, 'index']);
 
 
 
