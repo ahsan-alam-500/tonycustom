@@ -50,7 +50,7 @@ Route::apiResource('products',ProductController::class);
 //=========================Contact us===================================
 //======================================================================
 
-Route::get('contact', [ContactController::class, 'index']);
+Route::get('contacts', [ContactController::class, 'index']);
 
 
 
