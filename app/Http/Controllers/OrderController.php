@@ -10,8 +10,8 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $user = Auth::user()->id;
-        $orders = Order::where('user_id', $user)->get();
+        $user = Auth::user()->email;
+        $orders = Order::where('email', $user)->get();
         return response()->json([
             'success' => true,
             'status'  => 200,
