@@ -1,0 +1,4 @@
+# sqlite ignore
+
+# Database
+database/database.sqlite
