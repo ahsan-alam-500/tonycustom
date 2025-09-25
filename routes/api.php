@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\OrderController;
 
 // Public routes
 Route::post('register', [AuthController::class, 'register']);
@@ -37,9 +38,11 @@ Route::apiResource('products',ProductController::class);
 
 
 
+//======================================================================
+//============================Customer can handle==========================
+//======================================================================
 
-
-
+Route::apiResource('customer-orders', OrderController::class);
 
 
 
