@@ -51,6 +51,7 @@ Route::apiResource('products',ProductController::class);
 //======================================================================
 
 Route::get('contacts', [ContactController::class, 'index']);
+Route::get('contacts/{id}', [ContactController::class, 'destroy']);
 
 
 
