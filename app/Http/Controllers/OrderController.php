@@ -11,7 +11,7 @@ class OrderController extends Controller
     public function index()
     {
         $user = Auth::user()->email;
-        $orders = Order::where('email', $user)->get();
+        $orders = Order::with('orderItems')->where('email', $user)->get();
         return response()->json([
             'success' => true,
             'status'  => 200,
