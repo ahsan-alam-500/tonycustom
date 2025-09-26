@@ -33,7 +33,6 @@ Route::middleware('auth:api')->group(function () {
 //======================================================================
 Route::apiResource('categories',CategoryController::class);
 Route::apiResource('products',ProductController::class);
-Route::get('product/{slug}',[ProductController::class, 'show']);
 Route::apiResource('orders',AdminOrderController::class);
 
 
