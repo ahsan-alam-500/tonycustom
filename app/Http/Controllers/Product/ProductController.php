@@ -93,7 +93,7 @@ class ProductController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $product = Product::with(['category', 'images','productHasimages'])->findOrFail($id);
+            $product = Product::with(['category', 'images'])->findOrFail($id);
 
             if ($product->type === 'customizable') {
                 $product->load([
