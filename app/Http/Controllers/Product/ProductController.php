@@ -221,10 +221,10 @@ class ProductController extends Controller
             'status' => 'required|boolean',
             'offer_price' => 'nullable|numeric|min:0|lt:price',
             'category_id' => 'required|exists:categories,id',
-            'short_description' => 'nullable|string|max:50000',
+            'short_description' => 'nullable|string',
             'description' => 'nullable|string',
             'image' => 'nullable|string',
-            'images' => 'nullable|array|max:1000',
+            'images' => 'nullable|array',
             'images.*' => 'required|string',
         ];
 
