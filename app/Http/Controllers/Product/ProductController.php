@@ -224,7 +224,7 @@ class ProductController extends Controller
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'image' => 'nullable|string',
-            'images' => 'nullable|array|max:50',
+            'images' => 'nullable|array|max:10',
             'images.*' => 'required|string',
         ];
 
