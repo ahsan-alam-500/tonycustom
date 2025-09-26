@@ -7,6 +7,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 class AdminOrderController extends Controller
@@ -66,7 +67,7 @@ class AdminOrderController extends Controller
         try {
             $order->update([
                 'status' => $request->status,
-                'updated_by' => auth()->id()
+                'updated_by' => Auth::user()->id
             ]);
 
             return $this->successResponse(
