@@ -57,7 +57,7 @@ class ProductController extends Controller
 
             // main image
             if (!empty($validated['image'])) {
-                $mainImagePath = $this->saveBase64Image($validated['image'], 'products/main');
+                $mainImagePath = $this->saveBase64Image($validated['image'], 'public/products/main');
                 $product->update(['image' => $mainImagePath]);
             }
 
@@ -270,7 +270,7 @@ class ProductController extends Controller
     {
         foreach ($images as $imageBase64) {
             if (!empty($imageBase64)) {
-                $imagePath = $this->saveBase64Image($imageBase64, 'products/gallery');
+                $imagePath = $this->saveBase64Image($imageBase64, 'public/products/gallery');
                 ProductHasImage::create([
                     'product_id' => $product->id,
                     'image' => $imagePath,
@@ -305,7 +305,7 @@ class ProductController extends Controller
 
                     if (!empty($itemData['images'])) {
                         foreach ($itemData['images'] as $imageBase64) {
-                            $path = $this->saveBase64Image($imageBase64, "products/customizations/{$relation}");
+                            $path = $this->saveBase64Image($imageBase64, "public/products/customizations/{$relation}");
                             $item->images()->create(['image' => $path]);
                         }
                     }
