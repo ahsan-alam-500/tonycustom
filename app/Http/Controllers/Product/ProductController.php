@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use phpDocumentor\Reflection\PseudoTypes\LowercaseString;
 
 class ProductController extends Controller
 {
@@ -50,6 +51,8 @@ class ProductController extends Controller
             DB::beginTransaction();
 
             $productData = $this->prepareProductData($validated);
+            $productData['type'] = strtolower($validated['type']);
+
             $product = Product::create($productData);
 
             // main image
@@ -213,7 +216,7 @@ class ProductController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|unique:products,slug' . ($productId ? ',' . $productId : ''),
-            'type' => 'required|in:simple,customizable',
+            'type' => 'required|in:Simple,Customizable',
             'price' => 'required|numeric|min:0',
             'status' => 'required|boolean',
             'offer_price' => 'nullable|numeric|min:0|lt:price',
