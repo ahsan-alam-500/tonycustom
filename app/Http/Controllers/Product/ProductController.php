@@ -54,14 +54,6 @@ class ProductController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-
-        return response()->json([
-            'success' => true,
-            'status'  => 200,
-            'message' => 'Product Returning',
-            'data'    => ['info' => $request->all()]
-        ]);
-
         if (!Gate::allows('create-products')) {
             return $this->unauthorizedResponse();
         }
