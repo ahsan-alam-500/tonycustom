@@ -409,13 +409,13 @@ class ProductController extends Controller
         ];
 
         if ($product->image) {
-            $data['image'] = asset('storage/' . $product->image);
+            $data['image'] = asset('public/storage/' . $product->image);
         }
 
         if ($product->relationLoaded('images')) {
             $data['gallery_images'] = $product->images->map(fn($img) => [
                 'id' => $img->id,
-                'url' => asset('storage/' . $img->image),
+                'url' => asset('public/storage/' . $img->image),
                 'alt' => $product->name
             ])->toArray();
         }
@@ -439,7 +439,7 @@ class ProductController extends Controller
                         if ($item->relationLoaded('images')) {
                             $itemData['images'] = $item->images->map(fn($img) => [
                                 'id' => $img->id,
-                                'url' => asset('storage/' . $img->image)
+                                'url' => asset('public/storage/' . $img->image)
                             ])->toArray();
                         }
                         return $itemData;
