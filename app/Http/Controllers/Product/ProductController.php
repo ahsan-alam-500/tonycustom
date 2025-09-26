@@ -248,7 +248,7 @@ class ProductController extends Controller
     {
         return [
             'name' => $validated['name'],
-            'slug' => $validated['slug'] ?"%".rand(1000, 9999)."%".$validated['slug'] : "%".rand(1000, 9999)."%".(Str::slug($validated['name'])),
+            'slug' => $validated['slug'] ?"%".rand(1000, 9999)."% /".$validated['slug'] : "%".rand(1000, 9999)."% /".(Str::slug($validated['name'])),
             'type' => $validated['type'],
             'price' => $validated['price'],
             'status' => $validated['status'],
