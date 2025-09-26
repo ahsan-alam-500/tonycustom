@@ -41,7 +41,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Store a newly created product. save to database
+     * Store a newly created product.
      */
     public function store(Request $request): JsonResponse
     {
