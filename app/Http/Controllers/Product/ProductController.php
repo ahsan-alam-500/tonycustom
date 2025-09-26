@@ -90,10 +90,10 @@ class ProductController extends Controller
     /**
      * Show product details.
      */
-    public function show($id): JsonResponse
+    public function show($slug): JsonResponse
     {
         try {
-            $product = Product::with(['category', 'images'])->findOrFail($id);
+            $product = Product::with(['category', 'images'])->where('slug', $slug)->firstOrFail();
 
             if ($product->type === 'customizable') {
                 $product->load([
