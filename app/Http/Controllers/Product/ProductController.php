@@ -176,10 +176,6 @@ class ProductController extends Controller
      */
     public function destroy($id): JsonResponse
     {
-        if (!Gate::allows('delete-products')) {
-            return $this->unauthorizedResponse();
-        }
-
         try {
             $product = Product::findOrFail($id);
 
