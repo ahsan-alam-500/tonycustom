@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\Product\CategoryController;
 use App\Http\Controllers\Product\ProductController;
@@ -32,6 +33,7 @@ Route::middleware('auth:api')->group(function () {
 //======================================================================
 Route::apiResource('categories',CategoryController::class);
 Route::apiResource('products',ProductController::class);
+Route::apiResource('orders',AdminOrderController::class);
 
 
 
