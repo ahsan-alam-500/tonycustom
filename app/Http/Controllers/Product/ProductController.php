@@ -54,10 +54,6 @@ class ProductController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        if (!Gate::allows('create-products')) {
-            return $this->unauthorizedResponse();
-        }
-
         try {
             $validated = $this->validateProductData($request);
 
