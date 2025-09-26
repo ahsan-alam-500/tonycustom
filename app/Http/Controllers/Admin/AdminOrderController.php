@@ -17,10 +17,6 @@ class AdminOrderController extends Controller
     public function index(Request $request): JsonResponse
     {
         // Authorization using Gate/Policy (better approach)
-        // if (!Gate::allows('view-orders')) {
-        //     return $this->unauthorizedResponse();
-        // }
-
         try {
             // Query optimization with pagination
             $orders = Order::with(['orderItems', 'user:id,name,email'])
@@ -45,10 +41,6 @@ class AdminOrderController extends Controller
      */
     public function show(Order $order): JsonResponse
     {
-        if (!Gate::allows('view-orders')) {
-            return $this->unauthorizedResponse();
-        }
-
         try {
             $order->load(['orderItems.product', 'user']);
 
@@ -67,10 +59,6 @@ class AdminOrderController extends Controller
      */
     public function updateStatus(Request $request, Order $order): JsonResponse
     {
-        if (!Gate::allows('manage-orders')) {
-            return $this->unauthorizedResponse();
-        }
-
         $request->validate([
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled'
         ]);
@@ -114,13 +102,5 @@ class AdminOrderController extends Controller
             'status' => $status,
             'message' => $message,
         ], $status);
-    }
-
-    /**
-     * Return unauthorized response.
-     */
-    private function unauthorizedResponse(): JsonResponse
-    {
-        return $this->errorResponse('Unauthorized access', 401);
     }
 }
