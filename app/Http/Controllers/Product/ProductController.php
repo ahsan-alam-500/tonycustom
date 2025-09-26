@@ -31,11 +31,6 @@ class ProductController extends Controller
                 ->latest()
                 ->paginate($request->get('per_page', 15));
 
-            $products->getCollection()->transform(function ($product) {
-                $product->image = $product->image ? url('storage/' . $product->image) : null;
-                return $product;
-            });
-
             return $this->successResponse(
                 'Products fetched successfully',
                 $this->formatProductsResponse($products)
