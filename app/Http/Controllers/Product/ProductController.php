@@ -36,43 +36,7 @@ class ProductController extends Controller
             ->latest()
             ->paginate($request->get('per_page', 15));
 
-            // Transform collection to add full URLs with public prefix
-            $products->getCollection()->transform(function ($p) {
-                // Main image
-                if ($p->image) {
-                    $p->image = url('public/' . $p->image);
-                }
 
-                // Gallery images
-                if ($p->relationLoaded('images')) {
-                    $p->gallery_images = $p->images->map(function ($img) {
-                        return [
-                            'id' => $img->id,
-                            'url' => url('public/' . $img->image),
-                        ];
-                    })->toArray();
-                }
-
-                // Customizable options
-                if ($p->type === 'customizable') {
-                    $relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
-                    $customizations = [];
-                    foreach ($relations as $relation) {
-                        if ($p->relationLoaded($relation)) {
-                            $customizations[$relation] = $p->{$relation}->map(function ($item) {
-                                return [
-                                    'id' => $item->id,
-                                    'name' => $item->name,
-                                    'image' => $item->image ? url('public/' . $item->image) : null,
-                                ];
-                            })->toArray();
-                        }
-                    }
-                    $p->customizations = $customizations;
-                }
-
-                return $p;
-            });
 
             return $this->successResponse(
                 'Products fetched successfully',
