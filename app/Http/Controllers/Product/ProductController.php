@@ -38,9 +38,12 @@ public function index(Request $request): JsonResponse
 
         // Transform collection to add full URLs with public/storage
         $products->getCollection()->transform(function ($p) {
+
             // Main image
             if ($p->image) {
-                $p->image = url('public/storage/' . $p->image);
+                $p->image = Str::startsWith($p->image, ['http://','https://'])
+                    ? $p->image
+                    : url('public/storage/' . $p->image);
             }
 
             // Gallery images
@@ -48,7 +51,9 @@ public function index(Request $request): JsonResponse
                 $p->gallery_images = $p->images->map(function ($img) {
                     return [
                         'id' => $img->id,
-                        'url' => url('public/storage/' . $img->image),
+                        'url' => Str::startsWith($img->image, ['http://','https://'])
+                            ? $img->image
+                            : url('public/storage/' . $img->image),
                         'alt' => $img->alt ?? null,
                     ];
                 })->toArray();
@@ -58,17 +63,23 @@ public function index(Request $request): JsonResponse
             if ($p->type === 'customizable') {
                 $relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
                 $customizations = [];
+
                 foreach ($relations as $relation) {
                     if ($p->relationLoaded($relation)) {
                         $customizations[$relation] = $p->{$relation}->map(function ($item) {
                             return [
                                 'id' => $item->id,
                                 'name' => $item->name,
-                                'image' => $item->image ? url('public/storage/' . $item->image) : null,
+                                'image' => $item->image
+                                    ? (Str::startsWith($item->image, ['http://','https://'])
+                                        ? $item->image
+                                        : url('public/storage/' . $item->image))
+                                    : null,
                             ];
                         })->toArray();
                     }
                 }
+
                 $p->customizations = $customizations;
             }
 
