@@ -297,7 +297,10 @@ class ProductController extends Controller
                 }
 
                 foreach ($request->$relation as $itemData) {
-                    $item = $product->{$relation}()->create(['name' => $itemData['name']]);
+                    $item = $product->{$relation}()->create([
+                        'name' => $itemData['name'] ?? '',
+                        'product_id' => $product->id,
+                    ]);
 
                     if (!empty($itemData['images'])) {
                         foreach ($itemData['images'] as $imageBase64) {
