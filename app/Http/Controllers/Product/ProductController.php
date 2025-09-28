@@ -16,13 +16,16 @@ use Exception;
 
 class ProductController extends Controller
 {
+    /**
+     * Display a listing of products with pagination.
+     */
     public function index(Request $request): JsonResponse
     {
         try {
             $products = Product::with(['category', 'images'])
                 ->when($request->category_id, fn($q) => $q->where('category_id', $request->category_id))
                 ->when($request->type, fn($q) => $q->where('type', $request->type))
-                ->when($request->status !== null, fn($q) => $q->where('status', $request->boolean('status')))
+                ->when($request->status !== null, fn($q) => $q->where('status', $request->status === 'true'))
                 ->when($request->search, fn($q) => $q->where('name', 'LIKE', "%{$request->search}%"))
                 ->latest()
                 ->paginate($request->get('per_page', 15));
@@ -36,6 +39,9 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Store a newly created product.
+     */
     public function store(Request $request): JsonResponse
     {
         try {
@@ -48,18 +54,18 @@ class ProductController extends Controller
 
             $product = Product::create($productData);
 
-            // ✅ Main image
+            // main image
             if (!empty($validated['image'])) {
                 $mainImagePath = $this->saveBase64Image($validated['image'], 'products/main');
                 $product->update(['image' => $mainImagePath]);
             }
 
-            // ✅ Gallery images
+            // gallery images
             if (!empty($validated['images'])) {
                 $this->saveGalleryImages($product, $validated['images']);
             }
 
-            // ✅ Customizations
+            // customizations
             if ($product->type === 'customizable') {
                 $this->handleCustomizations($product, $request);
             }
@@ -80,6 +86,9 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Show product details.
+     */
     public function show($slug): JsonResponse
     {
         try {
@@ -102,6 +111,9 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Update product.
+     */
     public function update(Request $request, $id): JsonResponse
     {
         if (!Gate::allows('update-products')) {
@@ -117,7 +129,7 @@ class ProductController extends Controller
             $productData = $this->prepareProductData($validated);
             $product->update($productData);
 
-            // ✅ Main image update
+            // main image
             if (!empty($validated['image'])) {
                 if ($product->image) {
                     Storage::disk('public')->delete($product->image);
@@ -126,7 +138,7 @@ class ProductController extends Controller
                 $product->update(['image' => $mainImagePath]);
             }
 
-            // ✅ Gallery images update
+            // gallery images
             if (isset($validated['images'])) {
                 foreach ($product->images as $image) {
                     Storage::disk('public')->delete($image->image);
@@ -138,7 +150,7 @@ class ProductController extends Controller
                 }
             }
 
-            // ✅ Customizations
+            // customizations
             if ($product->type === 'customizable') {
                 $this->handleCustomizations($product, $request, true);
             }
@@ -158,6 +170,9 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Delete product.
+     */
     public function destroy($id): JsonResponse
     {
         try {
@@ -188,8 +203,9 @@ class ProductController extends Controller
         }
     }
 
-    // ================= Helpers =================
-
+    /**
+     * Validation rules.
+     */
     private function validateProductData(Request $request, $productId = null): array
     {
         $rules = [
@@ -207,30 +223,31 @@ class ProductController extends Controller
             'images.*' => 'required|string',
         ];
 
-        if (strtolower($request->type) === 'customizable') {
-            $customizableFields = [
+        if ($request->type === 'Customizable') {
+            $customFields = [
                 'base_cards', 'skin_tones', 'hairs', 'noses',
                 'eyes', 'mouths', 'dresses', 'crowns', 'beards'
             ];
 
-            foreach ($customizableFields as $field) {
+            foreach ($customFields as $field) {
                 $rules[$field] = 'sometimes|array';
-                $rules[$field . '.*.name'] = 'required|string|max:255';
+                $rules[$field . '.*.name'] = 'sometimes|string|max:255';
                 $rules[$field . '.*.images'] = 'sometimes|array';
-                $rules[$field . '.*.images.*'] = 'required|string';
+                $rules[$field . '.*.images.*'] = 'sometimes|string';
             }
         }
 
         return $request->validate($rules);
     }
 
+    /**
+     * Prepare product data.
+     */
     private function prepareProductData(array $validated): array
     {
         return [
             'name' => $validated['name'],
-            'slug' => $validated['slug']
-                ? $validated['slug'] . "-" . rand(1000, 9999)
-                : (Str::slug($validated['name']) . "-" . rand(1000, 9999)),
+            'slug' => $validated['slug'] ? $validated['slug']."-".rand(1000, 9999) : (Str::slug($validated['name'])."-".rand(1000, 9999)),
             'type' => $validated['type'],
             'price' => $validated['price'],
             'status' => $validated['status'],
@@ -241,6 +258,9 @@ class ProductController extends Controller
         ];
     }
 
+    /**
+     * Save gallery images.
+     */
     private function saveGalleryImages(Product $product, array $images): void
     {
         foreach ($images as $imageBase64) {
@@ -254,6 +274,9 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Handle customizable options safely.
+     */
     private function handleCustomizations(Product $product, Request $request, bool $isUpdate = false): void
     {
         $relations = [
@@ -262,30 +285,36 @@ class ProductController extends Controller
         ];
 
         foreach ($relations as $relation) {
-            if ($request->has($relation)) {
-                if ($isUpdate) {
-                    foreach ($product->{$relation} as $item) {
-                        foreach ($item->images as $image) {
-                            Storage::disk('public')->delete($image->image);
-                        }
+            // skip if field is missing or empty
+            if (!$request->has($relation) || empty($request->$relation)) {
+                continue;
+            }
+
+            if ($isUpdate) {
+                foreach ($product->{$relation} as $item) {
+                    foreach ($item->images as $image) {
+                        Storage::disk('public')->delete($image->image);
                     }
-                    $product->{$relation}()->delete();
                 }
+                $product->{$relation}()->delete();
+            }
 
-                foreach ($request->$relation as $itemData) {
-                    $item = $product->{$relation}()->create(['name' => $itemData['name']]);
+            foreach ($request->$relation as $itemData) {
+                $item = $product->{$relation}()->create(['name' => $itemData['name'] ?? '']);
 
-                    if (!empty($itemData['images'])) {
-                        foreach ($itemData['images'] as $imageBase64) {
-                            $path = $this->saveBase64Image($imageBase64, "products/customizations/{$relation}");
-                            $item->images()->create(['image' => $path]);
-                        }
+                if (!empty($itemData['images'])) {
+                    foreach ($itemData['images'] as $imageBase64) {
+                        $path = $this->saveBase64Image($imageBase64, "products/customizations/{$relation}");
+                        $item->images()->create(['image' => $path]);
                     }
                 }
             }
         }
     }
 
+    /**
+     * Delete customization images.
+     */
     private function deleteCustomizationImages(Product $product): void
     {
         $relations = [
@@ -302,6 +331,9 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Save base64 image and return path.
+     */
     private function saveBase64Image(string $base64Image, string $folder): string
     {
         if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
@@ -312,6 +344,7 @@ class ProductController extends Controller
             $extension = 'png';
         }
 
+        $imageData = str_replace(' ', '+', $imageData);
         $decodedImage = base64_decode($imageData);
 
         if ($decodedImage === false) {
@@ -323,27 +356,18 @@ class ProductController extends Controller
         }
 
         $fileName = time() . '_' . uniqid() . '.' . $extension;
-        $filePath = "products/$folder/$fileName";
+        $filePath = $folder . '/' . $fileName;
 
-        Storage::disk('public')->put($filePath, $decodedImage);
+        if (!Storage::disk('public')->put($filePath, $decodedImage)) {
+            throw new Exception('Failed to save image to storage');
+        }
 
         return $filePath;
     }
 
-    // ✅ Responses
-    private function formatProductsResponse($products): array
-    {
-        return [
-            'data' => $products->getCollection()->map(fn($p) => $this->formatSingleProduct($p)),
-            'pagination' => [
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-            ]
-        ];
-    }
-
+    /**
+     * Format single product for API response.
+     */
     private function formatSingleProduct($product): array
     {
         $data = [
@@ -354,7 +378,12 @@ class ProductController extends Controller
             'price' => $product->price,
             'offer_price' => $product->offer_price,
             'final_price' => $product->offer_price ?? $product->price,
+            'discount_percentage' => $product->offer_price ? round((($product->price - $product->offer_price)/$product->price)*100,2) : 0,
             'status' => $product->status,
+            'short_description' => $product->short_description,
+            'description' => $product->description,
+            'created_at' => $product->created_at->format('Y-m-d H:i:s'),
+            'updated_at' => $product->updated_at->format('Y-m-d H:i:s'),
         ];
 
         if ($product->image) {
@@ -373,29 +402,88 @@ class ProductController extends Controller
             $data['category'] = [
                 'id' => $product->category->id,
                 'name' => $product->category->name,
+                'slug' => $product->category->slug ?? null,
             ];
+        }
+
+        if ($product->type === 'customizable') {
+            $customizations = [];
+            $relations = ['skin_tones', 'hairs', 'noses', 'eyes', 'mouths', 'dresses', 'crowns', 'base_cards', 'beards'];
+
+            foreach ($relations as $relation) {
+                if ($product->relationLoaded($relation)) {
+                    $customizations[$relation] = $product->{$relation}->map(function ($item) {
+                        $itemData = ['id' => $item->id, 'name' => $item->name];
+                        if ($item->relationLoaded('images')) {
+                            $itemData['images'] = $item->images->map(fn($img) => [
+                                'id' => $img->id,
+                                'url' => asset('storage/' . $img->image)
+                            ])->toArray();
+                        }
+                        return $itemData;
+                    })->toArray();
+                }
+            }
+
+            if (!empty($customizations)) {
+                $data['customizations'] = $customizations;
+            }
         }
 
         return $data;
     }
 
+    /**
+     * Format products response for pagination.
+     */
+    private function formatProductsResponse($products): array
+    {
+        return [
+            'data' => $products->getCollection()->map(fn($p) => $this->formatSingleProduct($p)),
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+                'has_more_pages' => $products->hasMorePages(),
+            ]
+        ];
+    }
+
+    /**
+     * JSON success response.
+     */
     private function successResponse(string $message, $data = null, int $status = 200): JsonResponse
     {
         return response()->json(['success' => true, 'status' => $status, 'message' => $message, 'data' => $data], $status);
     }
 
+    /**
+     * JSON error response.
+     */
     private function errorResponse(string $message, int $status = 400): JsonResponse
     {
         return response()->json(['success' => false, 'status' => $status, 'message' => $message], $status);
     }
 
+    /**
+     * Validation error response.
+     */
     private function validationErrorResponse(ValidationException $e): JsonResponse
     {
         return response()->json([
-            'success' => false, 'status' => 422, 'message' => 'Validation failed', 'errors' => $e->errors()
+            'success' => false,
+            'status' => 422,
+            'message' => 'Validation failed',
+            'errors' => $e->errors()
         ], 422);
     }
 
+    /**
+     * Unauthorized response.
+     */
     private function unauthorizedResponse(): JsonResponse
     {
         return $this->errorResponse('Unauthorized access', 401);
