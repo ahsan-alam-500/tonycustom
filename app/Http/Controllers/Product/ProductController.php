@@ -40,7 +40,7 @@ public function index(Request $request): JsonResponse
    $products->getCollection()->transform(function ($p) {
     // Main image
     if ($p->image) {
-        $p->image = asset($p->image); // কোনো public/ বা url() প্রয়োজন নেই
+        $p->image = asset('public/'.$p->image);
     }
 
     // Gallery images
@@ -48,7 +48,7 @@ public function index(Request $request): JsonResponse
         $p->gallery_images = $p->images->map(function ($img) {
             return [
                 'id' => $img->id,
-                'url' => asset($img->image),
+                'url' => asset('public/'.$img->image),
             ];
         })->toArray();
     }
