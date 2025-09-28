@@ -76,6 +76,8 @@ public function index(Request $request): JsonResponse
             return $p;
         });
 
+    \Log::info($products);
+
         return $this->successResponse(
             'Products fetched successfully',
             $this->formatProductsResponse($products)
