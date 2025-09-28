@@ -37,44 +37,43 @@ public function index(Request $request): JsonResponse
         ->paginate($request->get('per_page', 15));
 
         // Transform collection to add full URLs
-        $products->getCollection()->transform(function ($p) {
-            // Main image
-            if ($p->image) {
-                $p->image = url('public/storage/' . $p->image);
-                \Log::info($p->image);
-            }
+   $products->getCollection()->transform(function ($p) {
+    // Main image
+    if ($p->image) {
+        $p->image = asset($p->image); // কোনো public/ বা url() প্রয়োজন নেই
+    }
 
-            // Gallery images
-            if ($p->relationLoaded('images')) {
-                $p->gallery_images = $p->images->map(function ($img) {
+    // Gallery images
+    if ($p->relationLoaded('images')) {
+        $p->gallery_images = $p->images->map(function ($img) {
+            return [
+                'id' => $img->id,
+                'url' => asset($img->image),
+            ];
+        })->toArray();
+    }
+
+    // Customizable options
+    if ($p->type === 'customizable') {
+        $relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
+        $customizations = [];
+        foreach ($relations as $relation) {
+            if ($p->relationLoaded($relation)) {
+                $customizations[$relation] = $p->{$relation}->map(function ($item) {
                     return [
-                        'id' => $img->id,
-                        'url' => url('public/storage/' . $img->image),
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'image' => $item->image ? asset($item->image) : null,
                     ];
                 })->toArray();
             }
+        }
+        $p->customizations = $customizations;
+    }
 
-            // Customizable options
-            if ($p->type === 'customizable') {
-                $relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
-                $customizations = [];
-                foreach ($relations as $relation) {
-                    if ($p->relationLoaded($relation)) {
-                        $customizations[$relation] = $p->{$relation}->map(function ($item) {
-                            $itemData = [
-                                'id' => $item->id,
-                                'name' => $item->name,
-                                'image' => $item->image ? url('public/storage/' . $item->image) : null,
-                            ];
-                            return $itemData;
-                        })->toArray();
-                    }
-                }
-                $p->customizations = $customizations;
-            }
-            \Log::info($p);
-            return $p;
-        });
+    return $p;
+});
+
 
     \Log::info($products);
 
