@@ -282,7 +282,9 @@ class ProductController extends Controller
      */
     private function handleCustomizations(Product $product, Request $request, bool $isUpdate = false): void
     {
-        return response()->json($request->all());
+        return response()->json([
+            'success' => true
+        ]);
         $relations = [
             'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
             'dresses', 'crowns', 'base_cards', 'beards'
