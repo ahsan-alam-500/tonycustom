@@ -19,25 +19,70 @@ class ProductController extends Controller
     /**
      * Display a listing of products with pagination.
      */
-    public function index(Request $request): JsonResponse
-    {
-        try {
-            $products = Product::with(['category', 'images'])
-                ->when($request->category_id, fn($q) => $q->where('category_id', $request->category_id))
-                ->when($request->type, fn($q) => $q->where('type', $request->type))
-                ->when($request->status !== null, fn($q) => $q->where('status', $request->status === 'true'))
-                ->when($request->search, fn($q) => $q->where('name', 'LIKE', "%{$request->search}%"))
-                ->latest()
-                ->paginate($request->get('per_page', 15));
+public function index(Request $request): JsonResponse
+{
+    try {
+        // Fetch products with relations
+        $products = Product::with([
+            'category',
+            'images',
+            'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
+            'dresses', 'crowns', 'base_cards', 'beards'
+        ])
+        ->when($request->category_id, fn($q) => $q->where('category_id', $request->category_id))
+        ->when($request->type, fn($q) => $q->where('type', $request->type))
+        ->when($request->status !== null, fn($q) => $q->where('status', $request->status === 'true'))
+        ->when($request->search, fn($q) => $q->where('name', 'LIKE', "%{$request->search}%"))
+        ->latest()
+        ->paginate($request->get('per_page', 15));
 
-            return $this->successResponse(
-                'Products fetched successfully',
-                $this->formatProductsResponse($products)
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse('Failed to fetch products', 500);
-        }
+        // Transform collection to add full URLs
+        $products->getCollection()->transform(function ($p) {
+            // Main image
+            if ($p->image) {
+                $p->image = url('public/storage/' . $p->image);
+            }
+
+            // Gallery images
+            if ($p->relationLoaded('images')) {
+                $p->gallery_images = $p->images->map(function ($img) {
+                    return [
+                        'id' => $img->id,
+                        'url' => url('public/storage/' . $img->image),
+                    ];
+                })->toArray();
+            }
+
+            // Customizable options
+            if ($p->type === 'customizable') {
+                $relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
+                $customizations = [];
+                foreach ($relations as $relation) {
+                    if ($p->relationLoaded($relation)) {
+                        $customizations[$relation] = $p->{$relation}->map(function ($item) {
+                            $itemData = [
+                                'id' => $item->id,
+                                'name' => $item->name,
+                                'image' => $item->image ? url('public/storage/' . $item->image) : null,
+                            ];
+                            return $itemData;
+                        })->toArray();
+                    }
+                }
+                $p->customizations = $customizations;
+            }
+
+            return $p;
+        });
+
+        return $this->successResponse(
+            'Products fetched successfully',
+            $this->formatProductsResponse($products)
+        );
+    } catch (Exception $e) {
+        return $this->errorResponse('Failed to fetch products: ' . $e->getMessage(), 500);
     }
+}
 
     /**
      * Store a newly created product.
