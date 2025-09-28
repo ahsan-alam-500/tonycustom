@@ -72,7 +72,7 @@ public function index(Request $request): JsonResponse
                 }
                 $p->customizations = $customizations;
             }
-
+            \Log::info($p->customizations);
             return $p;
         });
 
