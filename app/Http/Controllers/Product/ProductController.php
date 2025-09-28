@@ -41,6 +41,7 @@ public function index(Request $request): JsonResponse
             // Main image
             if ($p->image) {
                 $p->image = url('public/storage/' . $p->image);
+                \Log::info($p->image);
             }
 
             // Gallery images
