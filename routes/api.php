@@ -58,8 +58,6 @@ Route::apiResource('customer-orders', OrderController::class);
 Route::get('contacts', [ContactController::class, 'index']);
 Route::delete('contacts/{id}', [ContactController::class, 'destroy']);
 
-
-
 });
 
 //=============================================================
