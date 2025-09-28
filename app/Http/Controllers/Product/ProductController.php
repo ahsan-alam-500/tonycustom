@@ -278,7 +278,7 @@ class ProductController extends Controller
     /**
      * Handle customizable options.
      */
-    private function handleCustomizations(Product $product, Request $request, bool $isUpdate = false): void
+    private function handleCustomizations(Product $product, Request $request, bool $isUpdate = false)
     {
         $relations = [
             'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
