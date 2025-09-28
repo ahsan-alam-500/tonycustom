@@ -18,7 +18,7 @@ use phpDocumentor\Reflection\PseudoTypes\LowercaseString;
 class ProductController extends Controller
 {
     /**
-     * Display a listing of products with pagination and so.
+     * Display a listing of products with pagination.
      */
     public function index(Request $request): JsonResponse
     {
