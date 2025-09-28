@@ -19,7 +19,72 @@ class ProductController extends Controller
     /**
      * Display a listing of products with pagination.
      */
+public function index(Request $request): JsonResponse
+{
+    try {
+        // Fetch products with relations
+        $products = Product::with([
+            'category',
+            'images',
+            'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
+            'dresses', 'crowns', 'base_cards', 'beards'
+        ])
+        ->when($request->category_id, fn($q) => $q->where('category_id', $request->category_id))
+        ->when($request->type, fn($q) => $q->where('type', $request->type))
+        ->when($request->status !== null, fn($q) => $q->where('status', $request->status === 'true'))
+        ->when($request->search, fn($q) => $q->where('name', 'LIKE', "%{$request->search}%"))
+        ->latest()
+        ->paginate($request->get('per_page', 15));
 
+        // Transform collection to add full URLs
+   $products->getCollection()->transform(function ($p) {
+    // Main image
+    if ($p->image) {
+        $p->image = asset('public/'.$p->image);
+    }
+
+    // Gallery images
+    if ($p->relationLoaded('images')) {
+        $p->gallery_images = $p->images->map(function ($img) {
+            return [
+                'id' => $img->id,
+                'url' => asset('public/'.$img->image),
+            ];
+        })->toArray();
+    }
+
+    // Customizable options
+    if ($p->type === 'customizable') {
+        $relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
+        $customizations = [];
+        foreach ($relations as $relation) {
+            if ($p->relationLoaded($relation)) {
+                $customizations[$relation] = $p->{$relation}->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'image' => $item->image ? asset($item->image) : null,
+                    ];
+                })->toArray();
+            }
+        }
+        $p->customizations = $customizations;
+    }
+
+    return $p;
+});
+
+
+    \Log::info($products);
+
+        return $this->successResponse(
+            'Products fetched successfully',
+            $this->formatProductsResponse($products)
+        );
+    } catch (Exception $e) {
+        return $this->errorResponse('Failed to fetch products: ' . $e->getMessage(), 500);
+    }
+}
 
     /**
      * Store a newly created product.
