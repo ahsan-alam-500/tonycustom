@@ -18,7 +18,7 @@ use phpDocumentor\Reflection\PseudoTypes\LowercaseString;
 class ProductController extends Controller
 {
     /**
-     * Display a listing of products with pagination and sort.
+     * Display a listing of products with pagination and so.
      */
     public function index(Request $request): JsonResponse
     {
@@ -297,7 +297,7 @@ class ProductController extends Controller
                 }
 
                 foreach ($request->$relation as $itemData) {
-                    $item = $product->{$relation}()->create(['name' => $itemData['name'] ?? null]);
+                    $item = $product->{$relation}()->create(['name' => $itemData['name']]);
 
                     if (!empty($itemData['images'])) {
                         foreach ($itemData['images'] as $imageBase64) {
