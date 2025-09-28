@@ -277,19 +277,20 @@ class ProductController extends Controller
     /**
      * Handle customizable options safely.
      */
-    private function handleCustomizations(Product $product, Request $request, bool $isUpdate = false): void
-    {
-        $relations = [
-            'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
-            'dresses', 'crowns', 'base_cards', 'beards'
-        ];
+ /**
+ * Handle customizable options.
+ */
+private function handleCustomizations(Product $product, Request $request, bool $isUpdate = false): void
+{
+    $relations = [
+        'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
+        'dresses', 'crowns', 'base_cards', 'beards'
+    ];
 
-        foreach ($relations as $relation) {
-            // skip if field is missing or empty
-            if (!$request->has($relation) || empty($request->$relation)) {
-                continue;
-            }
+    foreach ($relations as $relation) {
+        if ($request->has($relation) && is_array($request->$relation)) {
 
+            // Update mode → old items & images delete
             if ($isUpdate) {
                 foreach ($product->{$relation} as $item) {
                     foreach ($item->images as $image) {
@@ -299,18 +300,32 @@ class ProductController extends Controller
                 $product->{$relation}()->delete();
             }
 
+            // Loop over incoming items
             foreach ($request->$relation as $itemData) {
-                $item = $product->{$relation}()->create(['name' => $itemData['name'] ?? '']);
+                // Create main item record
+                $item = $product->{$relation}()->create([
+                    'name' => $itemData['name'] ?? '',
+                    'product_id' => $product->id,
+                    'image' => null, // main image column nullable হলে null, নাহলে first image later set করা যাবে
+                ]);
 
-                if (!empty($itemData['images'])) {
-                    foreach ($itemData['images'] as $imageBase64) {
+                // Loop over images array if exists
+                if (!empty($itemData['images']) && is_array($itemData['images'])) {
+                    foreach ($itemData['images'] as $index => $imageBase64) {
                         $path = $this->saveBase64Image($imageBase64, "products/customizations/{$relation}");
                         $item->images()->create(['image' => $path]);
+
+                        // যদি main image column nullable না হয়, প্রথম image এখানে set করতে পারো
+                        if ($index === 0 && $item->image === null) {
+                            $item->update(['image' => $path]);
+                        }
                     }
                 }
             }
         }
     }
+}
+
 
     /**
      * Delete customization images.
