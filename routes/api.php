@@ -41,7 +41,7 @@ Route::apiResource('orders',AdminOrderController::class);
 
 
 //======================================================================
-//============================Customer can handle==========================
+//============================Customer can handle=======================
 //======================================================================
 
 Route::apiResource('customer-orders', OrderController::class);
