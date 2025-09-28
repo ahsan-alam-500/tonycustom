@@ -15,8 +15,6 @@ use Illuminate\Validation\ValidationException;
 use Exception;
 use phpDocumentor\Reflection\PseudoTypes\LowercaseString;
 
-use function Pest\Laravel\json;
-
 class ProductController extends Controller
 {
     /**
@@ -282,6 +280,11 @@ class ProductController extends Controller
      */
     private function handleCustomizations(Product $product, Request $request, bool $isUpdate = false): void
     {
+        $relations = [
+            'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
+            'dresses', 'crowns', 'base_cards', 'beards'
+        ];
+
         foreach ($relations as $relation) {
             if ($request->has($relation)) {
                 if ($isUpdate) {
@@ -294,10 +297,7 @@ class ProductController extends Controller
                 }
 
                 foreach ($request->$relation as $itemData) {
-                    $item = $product->{$relation}()->create([
-                        'name' => $itemData['name'] ?? '',
-                        'product_id' => $product->id,
-                    ]);
+                    $item = $product->{$relation}()->create(['name' => $itemData['name']]);
 
                     if (!empty($itemData['images'])) {
                         foreach ($itemData['images'] as $imageBase64) {
