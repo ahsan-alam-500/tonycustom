@@ -306,7 +306,8 @@ private function handleCustomizations(Product $product, Request $request, bool $
                 $item = $product->{$relation}()->create([
                     'name' => $itemData['name'] ?? '',
                     'product_id' => $product->id,
-                    'image' => 'abc', // main image column nullable হলে null, নাহলে first image later set করা যাবে
+                    // 'image' => 'abc', // main image column nullable হলে null, নাহলে first image later set করা যাবে
+                    'image' => $this->saveBase64Image($itemData['images'][0], "products/customizations/{$relation}")
                 ]);
 
                 // Loop over images array if exists
