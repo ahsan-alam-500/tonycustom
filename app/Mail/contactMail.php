@@ -15,17 +15,17 @@ class contactMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public $email, $name, $subject, $message;
-    public function __construct($name, $email, $subject, $message)
+    public $email, $name, $subject, $usermessage;
+    public function __construct($name, $email, $subject, $usermessage)
     {
         $this->email = $email;
         $this->name = $name;
         $this->subject = $subject;
-        $this->message = $message;
+        $this->usermessage = $usermessage;
     }
 
     /**
-     * Get the message envelope.
+     * Get the usermessage envelope.
      */
     public function envelope(): Envelope
     {
@@ -35,7 +35,7 @@ class contactMail extends Mailable
     }
 
     /**
-     * Get the message content definition.
+     * Get the usermessage content definition.
      */
     public function content(): Content
     {
@@ -45,7 +45,7 @@ class contactMail extends Mailable
                 'name' => $this->name,
                 'email' => $this->email,
                 'subject' => $this->subject,
-                'message' => $this->message
+                'usermessage' => $this->usermessage
             ]
         );
     }

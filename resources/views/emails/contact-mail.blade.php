@@ -92,7 +92,7 @@
                 </div>
 
                 <p><strong>Message:</strong></p>
-                <p>{{ $message }}</p>
+                <p>{{ $usermessage }}</p>
             </div>
 
             <!-- Footer -->
