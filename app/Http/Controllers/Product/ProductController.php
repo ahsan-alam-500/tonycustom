@@ -19,70 +19,107 @@ class ProductController extends Controller
     /**
      * Display a listing of products with pagination.
      */
-public function index(Request $request): JsonResponse
-{
-    try {
-        $products = Product::with([
-            'category',
-            'images',
-            'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
-            'dresses', 'crowns', 'base_cards', 'beards'
-        ])
-        ->when($request->category_id, fn($q) => $q->where('category_id', $request->category_id))
-        ->when($request->type, fn($q) => $q->where('type', $request->type))
-        ->when($request->status !== null, fn($q) => $q->where('status', $request->status === 'true'))
-        ->when($request->search, fn($q) => $q->where('name', 'LIKE', "%{$request->search}%"))
-        ->latest()
-        ->paginate($request->get('per_page', 15));
+    public function index(Request $request): JsonResponse
+    {
+        try {
+            $products = Product::with([
+                "category",
+                "images",
+                "skin_tones",
+                "hairs",
+                "noses",
+                "eyes",
+                "mouths",
+                "dresses",
+                "crowns",
+                "base_cards",
+                "beards",
+            ])
+                ->when(
+                    $request->category_id,
+                    fn($q) => $q->where("category_id", $request->category_id)
+                )
+                ->when(
+                    $request->type,
+                    fn($q) => $q->where("type", $request->type)
+                )
+                ->when(
+                    $request->status !== null,
+                    fn($q) => $q->where("status", $request->status === "true")
+                )
+                ->when(
+                    $request->search,
+                    fn($q) => $q->where("name", "LIKE", "%{$request->search}%")
+                )
+                ->latest()
+                ->paginate($request->get("per_page", 15));
 
-        $products->getCollection()->transform(function ($p) {
+            $products->getCollection()->transform(function ($p) {
+                // Main product image
+                $p->image = $p->image
+                    ? "storage/" . ltrim($p->image, "/")
+                    : null;
 
-            // Main product image
-            $p->image = $p->image ? 'storage/' . ltrim($p->image, '/') : null;
+                // Gallery images
+                $p->gallery_images = $p->images
+                    ->map(
+                        fn($img) => [
+                            "id" => $img->id,
+                            "url" => $img->image
+                                ? "storage/" . ltrim($img->image, "/")
+                                : null,
+                            "alt" => $img->alt ?? null,
+                        ]
+                    )
+                    ->toArray();
 
-            // Gallery images
-            $p->gallery_images = $p->images->map(fn($img) => [
-                'id' => $img->id,
-                'url' => $img->image ? 'storage/' . ltrim($img->image, '/') : null,
-                'alt' => $img->alt ?? null,
-            ])->toArray();
+                // Customizations
+                $custom_relations = [
+                    "skin_tones",
+                    "hairs",
+                    "noses",
+                    "eyes",
+                    "mouths",
+                    "dresses",
+                    "crowns",
+                    "base_cards",
+                    "beards",
+                ];
+                $customizations = [];
 
-            // Customizations
-            $custom_relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
-            $customizations = [];
+                foreach ($custom_relations as $relation) {
+                    $customizations[$relation] = $p->{$relation}
+                        ->map(
+                            fn($item) => [
+                                "id" => $item->id,
+                                "name" => $item->name,
+                                "image" => $item->image
+                                    ? "storage/" . ltrim($item->image, "/")
+                                    : "Somossa Ache",
+                            ]
+                        )
+                        ->toArray();
+                }
 
-            foreach ($custom_relations as $relation) {
-                $customizations[$relation] = $p->{$relation}->map(fn($item) => [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'image' => $item->image ? 'storage/' . ltrim($item->image, '/') : "Somossa Ache",
-                ])->toArray();
-            }
+                $p->customizations = $customizations;
 
-            $p->customizations = $customizations;
+                return $p;
+            });
 
-            return $p;
-        });
-
-        return response()->json([
-            'success' => true,
-            'status' => 200,
-            'message' => 'Products fetched successfully',
-            'data' => $products
-        ]);
-
-    } catch (Exception $e) {
-        return response()->json([
-            'success' => false,
-            'status' => 500,
-            'message' => 'Failed to fetch products: ' . $e->getMessage(),
-        ]);
+            return response()->json([
+                "success" => true,
+                "status" => 200,
+                "message" => "Products fetched successfully",
+                "data" => $products,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                "success" => false,
+                "status" => 500,
+                "message" => "Failed to fetch products: " . $e->getMessage(),
+            ]);
+        }
     }
-}
-
-
-
-
 
     /**
      * Store a newly created product.
@@ -95,31 +132,36 @@ public function index(Request $request): JsonResponse
             DB::beginTransaction();
 
             $productData = $this->prepareProductData($validated);
-            $productData['type'] = strtolower($validated['type']);
+            $productData["type"] = strtolower($validated["type"]);
 
             $product = Product::create($productData);
 
             // main image
-            if (!empty($validated['image'])) {
-                $mainImagePath = $this->saveBase64Image($validated['image'], 'products/main');
-                $product->update(['image' => $mainImagePath]);
+            if (!empty($validated["image"])) {
+                $mainImagePath = $this->saveBase64Image(
+                    $validated["image"],
+                    "products/main"
+                );
+                $product->update(["image" => $mainImagePath]);
             }
 
             // gallery images
-            if (!empty($validated['images'])) {
-                $this->saveGalleryImages($product, $validated['images']);
+            if (!empty($validated["images"])) {
+                $this->saveGalleryImages($product, $validated["images"]);
             }
 
             // customizations
-            if ($product->type === 'customizable') {
+            if ($product->type === "customizable") {
                 $this->handleCustomizations($product, $request);
             }
 
             DB::commit();
 
             return $this->successResponse(
-                'Product created successfully',
-                $this->formatSingleProduct($product->load(['category', 'images'])),
+                "Product created successfully",
+                $this->formatSingleProduct(
+                    $product->load(["category", "images"])
+                ),
                 201
             );
         } catch (ValidationException $e) {
@@ -127,70 +169,92 @@ public function index(Request $request): JsonResponse
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
             DB::rollBack();
-            return $this->errorResponse('Failed to create product: ' . $e->getMessage(), 500);
+            return $this->errorResponse(
+                "Failed to create product: " . $e->getMessage(),
+                500
+            );
         }
     }
 
     /**
      * Show product details.
      */
- public function show($slug): JsonResponse
-{
-    try {
-        $product = Product::with([
-            'category',
-            'images'
-        ])
-        ->where('slug', $slug)
-        ->firstOrFail();
+    public function show($slug): JsonResponse
+    {
+        try {
+            $product = Product::with(["category", "images"])
+                ->where("slug", $slug)
+                ->firstOrFail();
 
-        // Main product image
-        $product->image = $product->image ? 'storage/' . ltrim($product->image, '/') : null;
+            // Main product image
+            $product->image = $product->image
+                ? "storage/" . ltrim($product->image, "/")
+                : null;
 
-        // Gallery images
-        $product->gallery_images = $product->images->map(fn($img) => [
-            'id' => $img->id,
-            'url' => $img->image ? 'storage/' . ltrim($img->image, '/'):null,
-            'alt' => $img->alt ?? null,
-        ])->toArray();
+            // Gallery images
+            $product->gallery_images = $product->images
+                ->map(
+                    fn($img) => [
+                        "id" => $img->id,
+                        "url" => $img->image
+                            ? "storage/" . ltrim($img->image, "/")
+                            : null,
+                        "alt" => $img->alt ?? null,
+                    ]
+                )
+                ->toArray();
 
-        // Customizations (images included)
-        $custom_relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
-        $customizations = [];
+            // Customizations (images included)
+            $custom_relations = [
+                "skin_tones",
+                "hairs",
+                "noses",
+                "eyes",
+                "mouths",
+                "dresses",
+                "crowns",
+                "base_cards",
+                "beards",
+            ];
+            $customizations = [];
 
-        foreach ($custom_relations as $relation) {
-            $customizations[$relation] = $product->{$relation}->map(fn($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'image' => $item->image ? 'storage/' . ltrim($item->image, '/') : null,
-            ])->toArray();
+            foreach ($custom_relations as $relation) {
+                $customizations[$relation] = $product->{$relation}
+                    ->map(
+                        fn($item) => [
+                            "id" => $item->id,
+                            "name" => $item->name,
+                            "image" => $item->image
+                                ? "storage/" . ltrim($item->image, "/")
+                                : null,
+                        ]
+                    )
+                    ->toArray();
+            }
+
+            $product->customizations = $customizations;
+
+            return response()->json([
+                "success" => true,
+                "status" => 200,
+                "message" => "Product fetched successfully",
+                "data" => $product,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                "success" => false,
+                "status" => 404,
+                "message" => "Product not found",
+            ]);
         }
-
-        $product->customizations = $customizations;
-
-        return response()->json([
-            'success' => true,
-            'status' => 200,
-            'message' => 'Product fetched successfully',
-            'data' => $product
-        ]);
-
-    } catch (Exception $e) {
-        return response()->json([
-            'success' => false,
-            'status' => 404,
-            'message' => 'Product not found'
-        ]);
     }
-}
-
 
     /**
      * Update product.
      */
     public function update(Request $request, $id): JsonResponse
     {
-        if (!Gate::allows('update-products')) {
+        if (!Gate::allows("update-products")) {
             return $this->unauthorizedResponse();
         }
 
@@ -204,136 +268,170 @@ public function index(Request $request): JsonResponse
             $product->update($productData);
 
             // main image
-            if (!empty($validated['image'])) {
+            if (!empty($validated["image"])) {
                 if ($product->image) {
-                    Storage::disk('public')->delete($product->image);
+                    Storage::disk("public")->delete($product->image);
                 }
-                $mainImagePath = $this->saveBase64Image($validated['image'], 'products/main');
-                $product->update(['image' => $mainImagePath]);
+                $mainImagePath = $this->saveBase64Image(
+                    $validated["image"],
+                    "products/main"
+                );
+                $product->update(["image" => $mainImagePath]);
             }
 
             // gallery images
-            if (isset($validated['images'])) {
+            if (isset($validated["images"])) {
                 foreach ($product->images as $image) {
-                    Storage::disk('public')->delete($image->image);
+                    Storage::disk("public")->delete($image->image);
                 }
                 $product->images()->delete();
 
-                if (!empty($validated['images'])) {
-                    $this->saveGalleryImages($product, $validated['images']);
+                if (!empty($validated["images"])) {
+                    $this->saveGalleryImages($product, $validated["images"]);
                 }
             }
 
             // customizations
-            if ($product->type === 'customizable') {
+            if ($product->type === "customizable") {
                 $this->handleCustomizations($product, $request, true);
             }
 
             DB::commit();
 
             return $this->successResponse(
-                'Product updated successfully',
-                $this->formatSingleProduct($product->load(['category', 'images']))
+                "Product updated successfully",
+                $this->formatSingleProduct(
+                    $product->load(["category", "images"])
+                )
             );
         } catch (ValidationException $e) {
             DB::rollBack();
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
             DB::rollBack();
-            return $this->errorResponse('Failed to update product: ' . $e->getMessage(), 500);
+            return $this->errorResponse(
+                "Failed to update product: " . $e->getMessage(),
+                500
+            );
         }
     }
 
     /**
      * Delete product.
      */
-  /**
- * Delete product.
- */
-public function destroy($id): JsonResponse
-{
-    try {
-        $product = Product::with([
-            'images',
-            'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
-            'dresses', 'crowns', 'base_cards', 'beards'
-        ])->findOrFail($id);
+    /**
+     * Delete product.
+     */
+    public function destroy($id): JsonResponse
+    {
+        try {
+            $product = Product::with([
+                "images",
+                "skin_tones",
+                "hairs",
+                "noses",
+                "eyes",
+                "mouths",
+                "dresses",
+                "crowns",
+                "base_cards",
+                "beards",
+            ])->findOrFail($id);
 
-        DB::beginTransaction();
+            DB::beginTransaction();
 
-        // Delete main product image
-        if ($product->image) {
-            Storage::disk('public')->delete($product->image);
-        }
-
-        // Delete gallery images
-        foreach ($product->images as $image) {
-            Storage::disk('public')->delete($image->image);
-        }
-
-        // Delete customizable images
-        if ($product->type === 'customizable') {
-            $relations = [
-                'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
-                'dresses', 'crowns', 'base_cards', 'beards'
-            ];
-
-            foreach ($relations as $relation) {
-                foreach ($product->{$relation} as $item) {
-                    if ($item->image) {
-                        Storage::disk('public')->delete($item->image);
-                    }
-                }
-                // Delete all customization records
-                $product->{$relation}()->delete();
+            // Delete main product image
+            if ($product->image) {
+                Storage::disk("public")->delete($product->image);
             }
+
+            // Delete gallery images
+            foreach ($product->images as $image) {
+                Storage::disk("public")->delete($image->image);
+            }
+
+            // Delete customizable images
+            if ($product->type === "customizable") {
+                $relations = [
+                    "skin_tones",
+                    "hairs",
+                    "noses",
+                    "eyes",
+                    "mouths",
+                    "dresses",
+                    "crowns",
+                    "base_cards",
+                    "beards",
+                ];
+
+                foreach ($relations as $relation) {
+                    foreach ($product->{$relation} as $item) {
+                        if ($item->image) {
+                            Storage::disk("public")->delete($item->image);
+                        }
+                    }
+                    // Delete all customization records
+                    $product->{$relation}()->delete();
+                }
+            }
+
+            // Delete the product
+            $product->delete();
+
+            DB::commit();
+
+            return $this->successResponse("Product deleted successfully");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse(
+                "Failed to delete product: " . $e->getMessage(),
+                500
+            );
         }
-
-        // Delete the product
-        $product->delete();
-
-        DB::commit();
-
-        return $this->successResponse('Product deleted successfully');
-
-    } catch (Exception $e) {
-        DB::rollBack();
-        return $this->errorResponse('Failed to delete product: ' . $e->getMessage(), 500);
     }
-}
-
 
     /**
      * Validation rules.
      */
-    private function validateProductData(Request $request, $productId = null): array
-    {
+    private function validateProductData(
+        Request $request,
+        $productId = null
+    ): array {
         $rules = [
-            'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|unique:products,slug' . ($productId ? ',' . $productId : ''),
-            'type' => 'required|in:Simple,Customizable',
-            'price' => 'required|numeric|min:0',
-            'status' => 'required|boolean',
-            'offer_price' => 'nullable|numeric|min:0|lt:price',
-            'category_id' => 'required|exists:categories,id',
-            'short_description' => 'nullable|string',
-            'description' => 'nullable|string',
-            'image' => 'nullable|string',
-            'images' => 'nullable|array',
-            'images.*' => 'required|string',
+            "name" => "required|string|max:255",
+            "slug" =>
+                "nullable|string|unique:products,slug" .
+                ($productId ? "," . $productId : ""),
+            "type" => "required|in:Simple,Customizable",
+            "price" => "required|numeric|min:0",
+            "status" => "required|boolean",
+            "offer_price" => "nullable|numeric|min:0|lt:price",
+            "category_id" => "required|exists:categories,id",
+            "short_description" => "nullable|string",
+            "description" => "nullable|string",
+            "image" => "nullable|string",
+            "images" => "nullable|array",
+            "images.*" => "required|string",
         ];
 
-        if ($request->type === 'Customizable') {
+        if ($request->type === "Customizable") {
             $customFields = [
-                'base_cards', 'skin_tones', 'hairs', 'noses',
-                'eyes', 'mouths', 'dresses', 'crowns', 'beards'
+                "base_cards",
+                "skin_tones",
+                "hairs",
+                "noses",
+                "eyes",
+                "mouths",
+                "dresses",
+                "crowns",
+                "beards",
             ];
 
             foreach ($customFields as $field) {
-                $rules[$field] = 'sometimes|array';
-                $rules[$field . '.*.name'] = 'sometimes|string|max:255';
-                $rules[$field . '.*.images'] = 'sometimes|array';
-                $rules[$field . '.*.images.*'] = 'sometimes|string';
+                $rules[$field] = "sometimes|array";
+                $rules[$field . ".*.name"] = "sometimes|string|max:255";
+                $rules[$field . ".*.images"] = "sometimes|array";
+                $rules[$field . ".*.images.*"] = "sometimes|string";
             }
         }
 
@@ -346,15 +444,17 @@ public function destroy($id): JsonResponse
     private function prepareProductData(array $validated): array
     {
         return [
-            'name' => $validated['name'],
-            'slug' => $validated['slug'] ? $validated['slug']."-".rand(1000, 9999) : (Str::slug($validated['name'])."-".rand(1000, 9999)),
-            'type' => $validated['type'],
-            'price' => $validated['price'],
-            'status' => $validated['status'],
-            'category_id' => $validated['category_id'],
-            'short_description' => $validated['short_description'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'offer_price' => $validated['offer_price'] ?? null,
+            "name" => $validated["name"],
+            "slug" => $validated["slug"]
+                ? $validated["slug"] . "-" . rand(1000, 9999)
+                : Str::slug($validated["name"]) . "-" . rand(1000, 9999),
+            "type" => $validated["type"],
+            "price" => $validated["price"],
+            "status" => $validated["status"],
+            "category_id" => $validated["category_id"],
+            "short_description" => $validated["short_description"] ?? null,
+            "description" => $validated["description"] ?? null,
+            "offer_price" => $validated["offer_price"] ?? null,
         ];
     }
 
@@ -365,10 +465,13 @@ public function destroy($id): JsonResponse
     {
         foreach ($images as $imageBase64) {
             if (!empty($imageBase64)) {
-                $imagePath = $this->saveBase64Image($imageBase64, 'products/gallery');
+                $imagePath = $this->saveBase64Image(
+                    $imageBase64,
+                    "products/gallery"
+                );
                 ProductHasImage::create([
-                    'product_id' => $product->id,
-                    'image' => $imagePath,
+                    "product_id" => $product->id,
+                    "image" => $imagePath,
                 ]);
             }
         }
@@ -377,48 +480,57 @@ public function destroy($id): JsonResponse
     /**
      * Handle customizable options safely.
      */
- /**
- * Handle customizable options.
- */
-private function handleCustomizations(Product $product, Request $request, bool $isUpdate = false): void
-{
-    $relations = [
-        'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
-        'dresses', 'crowns', 'base_cards', 'beards'
-    ];
+    /**
+     * Handle customizable options.
+     */
+    private function handleCustomizations(
+        Product $product,
+        Request $request,
+        bool $isUpdate = false
+    ): void {
+        $relations = [
+            "skin_tones",
+            "hairs",
+            "noses",
+            "eyes",
+            "mouths",
+            "dresses",
+            "crowns",
+            "base_cards",
+            "beards",
+        ];
 
-    foreach ($relations as $relation) {
-        if ($request->has($relation) && is_array($request->$relation)) {
-
-            // Update mode → old items & images delete
-            if ($isUpdate) {
-                foreach ($product->{$relation} as $item) {
-                    foreach ($item->images as $image) {
-                        Storage::disk('public')->delete($image->image);
+        foreach ($relations as $relation) {
+            if ($request->has($relation) && is_array($request->$relation)) {
+                // Update mode → old items & images delete
+                if ($isUpdate) {
+                    foreach ($product->{$relation} as $item) {
+                        foreach ($item->images as $image) {
+                            Storage::disk("public")->delete($image->image);
+                        }
                     }
+                    $product->{$relation}()->delete();
                 }
-                $product->{$relation}()->delete();
-            }
 
-            // এখন প্রতিটা $itemData হলো সরাসরি string (base64 image)
-            foreach ($request->$relation as $index => $imageBase64) {
-                $path = $this->saveBase64Image($imageBase64, "products/customizations/{$relation}");
+                // এখন প্রতিটা $itemData হলো সরাসরি string (base64 image)
+                foreach ($request->$relation as $index => $imageBase64) {
+                    $path = $this->saveBase64Image(
+                        $imageBase64,
+                        "products/customizations/{$relation}"
+                    );
 
-                // relation এ নতুন record তৈরি
-                $item = $product->{$relation}()->create([
-                    'name' => ucfirst($relation) . ' ' . ($index + 1), // auto name generate
-                    'product_id' => $product->id,
-                    'image' => $path
-                ]);
+                    // relation এ নতুন record তৈরি
+                    $item = $product->{$relation}()->create([
+                        "name" => ucfirst($relation) . " " . ($index + 1), // auto name generate
+                        "product_id" => $product->id,
+                        "image" => $path,
+                    ]);
 
-                // যদি একাধিক image লাগতো, তখন এখানে $item->images()->create() দিয়ে করতে পারতে
+                    // যদি একাধিক image লাগতো, তখন এখানে $item->images()->create() দিয়ে করতে পারতে
+                }
             }
         }
     }
-}
-
-
-
 
     /**
      * Delete customization images.
@@ -426,14 +538,21 @@ private function handleCustomizations(Product $product, Request $request, bool $
     private function deleteCustomizationImages(Product $product): void
     {
         $relations = [
-            'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
-            'dresses', 'crowns', 'base_cards', 'beards'
+            "skin_tones",
+            "hairs",
+            "noses",
+            "eyes",
+            "mouths",
+            "dresses",
+            "crowns",
+            "base_cards",
+            "beards",
         ];
 
         foreach ($relations as $relation) {
             foreach ($product->{$relation} as $item) {
                 foreach ($item->images as $image) {
-                    Storage::disk('public')->delete($image->image);
+                    Storage::disk("public")->delete($image->image);
                 }
             }
         }
@@ -442,32 +561,34 @@ private function handleCustomizations(Product $product, Request $request, bool $
     /**
      * Save base64 image and return path.
      */
-    private function saveBase64Image(string $base64Image, string $folder): string
-    {
-        if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
-            $imageData = substr($base64Image, strpos($base64Image, ',') + 1);
+    private function saveBase64Image(
+        string $base64Image,
+        string $folder
+    ): string {
+        if (preg_match("/^data:image\/(\w+);base64,/", $base64Image, $type)) {
+            $imageData = substr($base64Image, strpos($base64Image, ",") + 1);
             $extension = strtolower($type[1]);
         } else {
             $imageData = $base64Image;
-            $extension = 'png';
+            $extension = "png";
         }
 
-        $imageData = str_replace(' ', '+', $imageData);
+        $imageData = str_replace(" ", "+", $imageData);
         $decodedImage = base64_decode($imageData);
 
         if ($decodedImage === false) {
-            throw new Exception('Failed to decode base64 image');
+            throw new Exception("Failed to decode base64 image");
         }
 
-        if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-            $extension = 'png';
+        if (!in_array($extension, ["jpg", "jpeg", "png", "gif", "webp"])) {
+            $extension = "png";
         }
 
-        $fileName = time() . '_' . uniqid() . '.' . $extension;
-        $filePath = $folder . '/' . $fileName;
+        $fileName = time() . "_" . uniqid() . "." . $extension;
+        $filePath = $folder . "/" . $fileName;
 
-        if (!Storage::disk('public')->put($filePath, $decodedImage)) {
-            throw new Exception('Failed to save image to storage');
+        if (!Storage::disk("public")->put($filePath, $decodedImage)) {
+            throw new Exception("Failed to save image to storage");
         }
 
         return $filePath;
@@ -479,62 +600,94 @@ private function handleCustomizations(Product $product, Request $request, bool $
     private function formatSingleProduct($product): array
     {
         $data = [
-            'id' => $product->id,
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'type' => $product->type,
-            'price' => $product->price,
-            'offer_price' => $product->offer_price,
-            'final_price' => $product->offer_price ?? $product->price,
-            'discount_percentage' => $product->offer_price ? round((($product->price - $product->offer_price)/$product->price)*100,2) : 0,
-            'status' => $product->status,
-            'short_description' => $product->short_description,
-            'description' => $product->description,
-            'created_at' => $product->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $product->updated_at->format('Y-m-d H:i:s'),
+            "id" => $product->id,
+            "name" => $product->name,
+            "slug" => $product->slug,
+            "type" => $product->type,
+            "price" => $product->price,
+            "offer_price" => $product->offer_price,
+            "final_price" => $product->offer_price ?? $product->price,
+            "discount_percentage" => $product->offer_price
+                ? round(
+                    (($product->price - $product->offer_price) /
+                        $product->price) *
+                        100,
+                    2
+                )
+                : 0,
+            "status" => $product->status,
+            "short_description" => $product->short_description,
+            "description" => $product->description,
+            "created_at" => $product->created_at->format("Y-m-d H:i:s"),
+            "updated_at" => $product->updated_at->format("Y-m-d H:i:s"),
         ];
 
         if ($product->image) {
-            $data['image'] = asset('storage/' . $product->image);
+            $data["image"] = asset("storage/" . $product->image);
         }
 
-        if ($product->relationLoaded('images')) {
-            $data['gallery_images'] = $product->images->map(fn($img) => [
-                'id' => $img->id,
-                'url' => asset('storage/' . $img->image),
-                'alt' => $product->name
-            ])->toArray();
+        if ($product->relationLoaded("images")) {
+            $data["gallery_images"] = $product->images
+                ->map(
+                    fn($img) => [
+                        "id" => $img->id,
+                        "url" => asset("storage/" . $img->image),
+                        "alt" => $product->name,
+                    ]
+                )
+                ->toArray();
         }
 
-        if ($product->relationLoaded('category') && $product->category) {
-            $data['category'] = [
-                'id' => $product->category->id,
-                'name' => $product->category->name,
-                'slug' => $product->category->slug ?? null,
+        if ($product->relationLoaded("category") && $product->category) {
+            $data["category"] = [
+                "id" => $product->category->id,
+                "name" => $product->category->name,
+                "slug" => $product->category->slug ?? null,
             ];
         }
 
-        if ($product->type === 'customizable') {
+        if ($product->type === "customizable") {
             $customizations = [];
-            $relations = ['skin_tones', 'hairs', 'noses', 'eyes', 'mouths', 'dresses', 'crowns', 'base_cards', 'beards'];
+            $relations = [
+                "skin_tones",
+                "hairs",
+                "noses",
+                "eyes",
+                "mouths",
+                "dresses",
+                "crowns",
+                "base_cards",
+                "beards",
+            ];
 
             foreach ($relations as $relation) {
                 if ($product->relationLoaded($relation)) {
-                    $customizations[$relation] = $product->{$relation}->map(function ($item) {
-                        $itemData = ['id' => $item->id, 'name' => $item->name];
-                        if ($item->relationLoaded('images')) {
-                            $itemData['images'] = $item->images->map(fn($img) => [
-                                'id' => $img->id,
-                                'url' => asset('storage/' . $img->image)
-                            ])->toArray();
-                        }
-                        return $itemData;
-                    })->toArray();
+                    $customizations[$relation] = $product->{$relation}
+                        ->map(function ($item) {
+                            $itemData = [
+                                "id" => $item->id,
+                                "name" => $item->name,
+                            ];
+                            if ($item->relationLoaded("images")) {
+                                $itemData["images"] = $item->images
+                                    ->map(
+                                        fn($img) => [
+                                            "id" => $img->id,
+                                            "url" => asset(
+                                                "storage/" . $img->image
+                                            ),
+                                        ]
+                                    )
+                                    ->toArray();
+                            }
+                            return $itemData;
+                        })
+                        ->toArray();
                 }
             }
 
             if (!empty($customizations)) {
-                $data['customizations'] = $customizations;
+                $data["customizations"] = $customizations;
             }
         }
 
@@ -547,46 +700,68 @@ private function handleCustomizations(Product $product, Request $request, bool $
     private function formatProductsResponse($products): array
     {
         return [
-            'data' => $products->getCollection()->map(fn($p) => $this->formatSingleProduct($p)),
-            'pagination' => [
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-                'from' => $products->firstItem(),
-                'to' => $products->lastItem(),
-                'has_more_pages' => $products->hasMorePages(),
-            ]
+            "data" => $products
+                ->getCollection()
+                ->map(fn($p) => $this->formatSingleProduct($p)),
+            "pagination" => [
+                "current_page" => $products->currentPage(),
+                "last_page" => $products->lastPage(),
+                "per_page" => $products->perPage(),
+                "total" => $products->total(),
+                "from" => $products->firstItem(),
+                "to" => $products->lastItem(),
+                "has_more_pages" => $products->hasMorePages(),
+            ],
         ];
     }
 
     /**
      * JSON success response.
      */
-    private function successResponse(string $message, $data = null, int $status = 200): JsonResponse
-    {
-        return response()->json(['success' => true, 'status' => $status, 'message' => $message, 'data' => $data], $status);
+    private function successResponse(
+        string $message,
+        $data = null,
+        int $status = 200
+    ): JsonResponse {
+        return response()->json(
+            [
+                "success" => true,
+                "status" => $status,
+                "message" => $message,
+                "data" => $data,
+            ],
+            $status
+        );
     }
 
     /**
      * JSON error response.
      */
-    private function errorResponse(string $message, int $status = 400): JsonResponse
-    {
-        return response()->json(['success' => false, 'status' => $status, 'message' => $message], $status);
+    private function errorResponse(
+        string $message,
+        int $status = 400
+    ): JsonResponse {
+        return response()->json(
+            ["success" => false, "status" => $status, "message" => $message],
+            $status
+        );
     }
 
     /**
      * Validation error response.
      */
-    private function validationErrorResponse(ValidationException $e): JsonResponse
-    {
-        return response()->json([
-            'success' => false,
-            'status' => 422,
-            'message' => 'Validation failed',
-            'errors' => $e->errors()
-        ], 422);
+    private function validationErrorResponse(
+        ValidationException $e
+    ): JsonResponse {
+        return response()->json(
+            [
+                "success" => false,
+                "status" => 422,
+                "message" => "Validation failed",
+                "errors" => $e->errors(),
+            ],
+            422
+        );
     }
 
     /**
@@ -594,6 +769,6 @@ private function handleCustomizations(Product $product, Request $request, bool $
      */
     private function unauthorizedResponse(): JsonResponse
     {
-        return $this->errorResponse('Unauthorized access', 401);
+        return $this->errorResponse("Unauthorized access", 401);
     }
 }
