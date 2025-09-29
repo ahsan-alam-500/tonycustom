@@ -360,30 +360,41 @@ private function handleCustomizations(Product $product, Request $request, bool $
 
             // Loop over incoming items
             foreach ($request->$relation as $itemData) {
+                $images = $itemData['images'] ?? null;
+
+                // এক্ষেত্রে images array বা string হতে পারে
+                if (is_array($images) && !empty($images)) {
+                    $mainImage = $this->saveBase64Image($images[0], "products/customizations/{$relation}");
+                } elseif (is_string($images) && !empty($images)) {
+                    $mainImage = $this->saveBase64Image($images, "products/customizations/{$relation}");
+                    $images = [$images]; // পরে loop চালাতে সুবিধা হবে
+                } else {
+                    $mainImage = null;
+                    $images = [];
+                }
+
                 // Create main item record
                 $item = $product->{$relation}()->create([
                     'name' => $itemData['name'] ?? '',
                     'product_id' => $product->id,
-                    // 'image' => 'abc', // main image column nullable হলে null, নাহলে first image later set করা যাবে
-                    'image' => $this->saveBase64Image($itemData['images'][0], "products/customizations/{$relation}")
+                    'image' => $mainImage,
                 ]);
 
                 // Loop over images array if exists
-                if (!empty($itemData['images']) && is_array($itemData['images'])) {
-                    foreach ($itemData['images'] as $index => $imageBase64) {
-                        $path = $this->saveBase64Image($imageBase64, "products/customizations/{$relation}");
-                        $item->images()->create(['image' => $path]);
+                foreach ($images as $index => $imageBase64) {
+                    $path = $this->saveBase64Image($imageBase64, "products/customizations/{$relation}");
+                    $item->images()->create(['image' => $path]);
 
-                        // যদি main image column nullable না হয়, প্রথম image এখানে set করতে পারো
-                        if ($index === 0 && $item->image === null) {
-                            $item->update(['image' => $path]);
-                        }
+                    // যদি main image column nullable না হয়, প্রথম image এখানে set করতে পারো
+                    if ($index === 0 && $item->image === null) {
+                        $item->update(['image' => $path]);
                     }
                 }
             }
         }
     }
 }
+
 
 
     /**
