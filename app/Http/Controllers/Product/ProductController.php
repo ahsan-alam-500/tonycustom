@@ -38,59 +38,48 @@ public function index(Request $request): JsonResponse
         $products->getCollection()->transform(function ($p) {
 
             // Main product image
-            if ($p->image) {
-                $p->image = Str::startsWith($p->image, ['http://','https://'])
-                    ? $p->image
-                    : 'public/storage/' . ltrim($p->image, '/');
-            }
+            $p->image = $p->image ? url('storage/' . ltrim($p->image, '/')) : null;
 
             // Gallery images
-            if ($p->relationLoaded('images')) {
-                $p->gallery_images = $p->images->map(function ($img) {
-                    return [
-                        'id' => $img->id,
-                        'url' => Str::startsWith($img->image, ['http://','https://'])
-                            ? $img->image
-                            : 'public/storage/' . ltrim($img->image, '/'),
-                        'alt' => $img->alt ?? null,
-                    ];
-                })->toArray();
-            }
+            $p->gallery_images = $p->images->map(fn($img) => [
+                'id' => $img->id,
+                'url' => $img->image ? url('storage/' . ltrim($img->image, '/')) : null,
+                'alt' => $img->alt ?? null,
+            ])->toArray();
 
             // Customizations
-            if ($p->type === 'customizable') {
-                $relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
-                $customizations = [];
+            $custom_relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
+            $customizations = [];
 
-                foreach ($relations as $relation) {
-                    if ($p->relationLoaded($relation)) {
-                        $customizations[$relation] = $p->{$relation}->map(function ($item) {
-                            return [
-                                'id' => $item->id,
-                                'name' => $item->name,
-                                'image' => $item->image
-                                    ? 'public/storage/'.$item->image
-                                    : null,
-                            ];
-                        })->toArray();
-                    }
-                }
-
-                $p->customizations = $customizations;
+            foreach ($custom_relations as $relation) {
+                $customizations[$relation] = $p->{$relation}->map(fn($item) => [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'image' => $item->image ? url('storage/' . ltrim($item->image, '/')) : "Somossa",
+                ])->toArray();
             }
+
+            $p->customizations = $customizations;
 
             return $p;
         });
 
-        return $this->successResponse(
-            'Products fetched successfully',
-            $this->formatProductsResponse($products)
-        );
+        return response()->json([
+            'success' => true,
+            'status' => 200,
+            'message' => 'Products fetched successfully',
+            'data' => $products
+        ]);
 
     } catch (Exception $e) {
-        return $this->errorResponse('Failed to fetch products: ' . $e->getMessage(), 500);
+        return response()->json([
+            'success' => false,
+            'status' => 500,
+            'message' => 'Failed to fetch products: ' . $e->getMessage(),
+        ]);
     }
 }
+
 
 
 
