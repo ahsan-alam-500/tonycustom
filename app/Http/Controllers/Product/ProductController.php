@@ -55,6 +55,7 @@ public function index(Request $request): JsonResponse
                 $customizations[$relation] = $p->{$relation}->map(fn($item) => [
                     'id' => $item->id,
                     'name' => $item->name,
+                    'url' => url('/'),
                     'image' => $item->image ? url('storage/' . ltrim($item->image, '/')) : "Somossa",
                 ])->toArray();
             }
