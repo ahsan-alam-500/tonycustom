@@ -137,7 +137,7 @@ public function index(Request $request): JsonResponse
     public function show($slug): JsonResponse
     {
         try {
-            $product = Product::with(['category', 'images'])->where('slug', $slug)->firstOrFail();
+            $product = Product::with(['category', 'images'])->where('slug','LIKE', $slug)->firstOrFail();
 
             if ($product->type === 'customizable') {
                 $product->load([
