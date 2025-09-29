@@ -67,3 +67,4 @@ Route::delete('contacts/{id}', [ContactController::class, 'destroy']);
 
 Route::post('contact', [ContactController::class, 'store']);
 Route::get('shop', [ProductController::class, 'index']);
+Route::get('shop/{slug}', [ProductController::class, 'view']);
