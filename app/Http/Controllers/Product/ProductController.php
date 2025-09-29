@@ -38,12 +38,12 @@ public function index(Request $request): JsonResponse
         $products->getCollection()->transform(function ($p) {
 
             // Main product image
-            $p->image = $p->image ? url('storage/' . ltrim($p->image, '/')) : null;
+            $p->image = $p->image ? 'storage/' . ltrim($p->image, '/') : null;
 
             // Gallery images
             $p->gallery_images = $p->images->map(fn($img) => [
                 'id' => $img->id,
-                'url' => $img->image ? url('storage/' . ltrim($img->image, '/')) : null,
+                'url' => $img->image ? 'storage/' . ltrim($img->image, '/') : null,
                 'alt' => $img->alt ?? null,
             ])->toArray();
 
@@ -55,8 +55,7 @@ public function index(Request $request): JsonResponse
                 $customizations[$relation] = $p->{$relation}->map(fn($item) => [
                     'id' => $item->id,
                     'name' => $item->name,
-                    'url' => url('/'),
-                    'image' => $item->image ? url('storage/' . ltrim($item->image, '/')) : "Somossa",
+                    'image' => $item->image ? 'storage/' . ltrim($item->image, '/') : "Somossa Ache",
                 ])->toArray();
             }
 
