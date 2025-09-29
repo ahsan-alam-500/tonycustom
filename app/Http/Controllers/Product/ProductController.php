@@ -134,27 +134,58 @@ public function index(Request $request): JsonResponse
     /**
      * Show product details.
      */
-    public function show($slug): JsonResponse
-    {
-        try {
-            $product = Product::with(['category', 'images'])->where('slug','LIKE', $slug)->firstOrFail();
-            \Log::info($product);
-            if ($product->type === 'customizable') {
-                $product->load([
-                    'skin_tones.image', 'hairs.image', 'noses.image',
-                    'eyes.image', 'mouths.image', 'dresses.image',
-                    'crowns.image', 'base_cards.image', 'beards.image',
-                ]);
-            }
+ public function show($slug): JsonResponse
+{
+    try {
+        $product = Product::with([
+            'category',
+            'images',
+            'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
+            'dresses', 'crowns', 'base_cards', 'beards'
+        ])
+        ->where('slug', $slug)
+        ->firstOrFail();
 
-            return $this->successResponse(
-                'Product fetched successfully',
-                $this->formatSingleProduct($product)
-            );
-        } catch (Exception $e) {
-            return $this->errorResponse('Product not found', 404);
+        // Main product image
+        $product->image = $product->image ? url('storage/' . ltrim($product->image, '/')) : null;
+
+        // Gallery images
+        $product->gallery_images = $product->images->map(fn($img) => [
+            'id' => $img->id,
+            'url' => $img->image ? url('storage/' . ltrim($img->image, '/')) : null,
+            'alt' => $img->alt ?? null,
+        ])->toArray();
+
+        // Customizations (images included)
+        $custom_relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
+        $customizations = [];
+
+        foreach ($custom_relations as $relation) {
+            $customizations[$relation] = $product->{$relation}->map(fn($item) => [
+                'id' => $item->id,
+                'name' => $item->name,
+                'image' => $item->image ? url('storage/' . ltrim($item->image, '/')) : null,
+            ])->toArray();
         }
+
+        $product->customizations = $customizations;
+
+        return response()->json([
+            'success' => true,
+            'status' => 200,
+            'message' => 'Product fetched successfully',
+            'data' => $product
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'status' => 404,
+            'message' => 'Product not found'
+        ]);
     }
+}
+
 
     /**
      * Update product.
