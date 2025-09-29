@@ -42,8 +42,8 @@ public function index(Request $request): JsonResponse
             // Main image
             if ($p->image) {
                 $p->image = Str::startsWith($p->image, ['http://','https://'])
-                    ? 'public/'.$p->image
-                    : url('public/storage/' . $p->image);
+                    ? $p->image
+                    : url('storage/' . $p->image); // "public/storage" folder mapping
             }
 
             // Gallery images
@@ -52,8 +52,8 @@ public function index(Request $request): JsonResponse
                     return [
                         'id' => $img->id,
                         'url' => Str::startsWith($img->image, ['http://','https://'])
-                            ? 'public/'.$img->image
-                            : url('public/storage/' . $img->image),
+                            ? $img->image
+                            : url('storage/' . $img->image),
                         'alt' => $img->alt ?? null,
                     ];
                 })->toArray();
@@ -73,7 +73,7 @@ public function index(Request $request): JsonResponse
                                 'image' => $item->image
                                     ? (Str::startsWith($item->image, ['http://','https://'])
                                         ? $item->image
-                                        : url('public/storage/' . $item->image))
+                                        : url('storage/' . $item->image))
                                     : null,
                             ];
                         })->toArray();
@@ -95,6 +95,7 @@ public function index(Request $request): JsonResponse
         return $this->errorResponse('Failed to fetch products: ' . $e->getMessage(), 500);
     }
 }
+
 
 
     /**
