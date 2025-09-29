@@ -147,12 +147,12 @@ public function index(Request $request): JsonResponse
         ->firstOrFail();
 
         // Main product image
-        $product->image = $product->image ? url('storage/' . ltrim($product->image, '/')) : null;
+        $product->image = $product->image ? 'storage/' . ltrim($product->image, '/') : null;
 
         // Gallery images
         $product->gallery_images = $product->images->map(fn($img) => [
             'id' => $img->id,
-            'url' => $img->image ? url('storage/' . ltrim($img->image, '/')) : null,
+            'url' => $img->image ? 'storage/' . ltrim($img->image, '/'):null,
             'alt' => $img->alt ?? null,
         ])->toArray();
 
@@ -164,7 +164,7 @@ public function index(Request $request): JsonResponse
             $customizations[$relation] = $product->{$relation}->map(fn($item) => [
                 'id' => $item->id,
                 'name' => $item->name,
-                'image' => $item->image ? url('storage/' . ltrim($item->image, '/')) : null,
+                'image' => $item->image ? 'storage/' . ltrim($item->image, '/') : null,
             ])->toArray();
         }
 
