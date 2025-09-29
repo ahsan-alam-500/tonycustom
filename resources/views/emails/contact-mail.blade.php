@@ -23,14 +23,14 @@
             max-width: 600px;
             margin: 0 auto;
             background: #ffffff;
-            border-radius: 8px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .email-header {
-            background: #3CA9FF;
-            padding: 20px;
+            background: linear-gradient(135deg, #3CA9FF, #006eff);
+            padding: 25px;
             text-align: center;
             color: #fff;
         }
@@ -38,6 +38,8 @@
         .email-header h1 {
             margin: 0;
             font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         .email-body {
@@ -47,7 +49,8 @@
         .email-body h2 {
             margin-top: 0;
             font-size: 20px;
-            color: #3CA9FF;
+            font-weight: 600;
+            color: #006eff;
         }
 
         .email-body p {
@@ -57,16 +60,22 @@
 
         .info-box {
             margin: 20px 0;
-            padding: 15px;
+            padding: 15px 20px;
             background: #f9fafc;
             border-left: 4px solid #3CA9FF;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            margin: 8px 0;
+            font-size: 15px;
         }
 
         .email-footer {
             text-align: center;
-            padding: 15px;
+            padding: 18px;
             font-size: 13px;
-            color: #999;
+            color: #777;
             background: #fafafa;
         }
     </style>
@@ -83,16 +92,16 @@
             <!-- Body -->
             <div class="email-body">
                 <h2>Hello Admin,</h2>
-                <p>You have received a new contact form submission. Here are the details:</p>
+                <p>You’ve received a new contact form submission. Details are below:</p>
 
                 <div class="info-box">
                     <p><strong>Name:</strong> {{ $name }}</p>
                     <p><strong>Email:</strong> {{ $email }}</p>
-                    <p><strong>Subject:</strong> {{ $subject }}</p>
+                    <p><strong>Subject:</strong> {{ $sub }}</p>
                 </div>
 
                 <p><strong>Message:</strong></p>
-                <p>{{ $usermessage }}</p>
+                <p>{{ $mes }}</p>
             </div>
 
             <!-- Footer -->

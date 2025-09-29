@@ -27,7 +27,7 @@ class ContactController extends Controller
         $contact = Contact::create($request->all());
 
         if($contact){
-          $sent =  Mail::to('contact@momentocardgames.com')->send(new contactMail($request->name, $request->email, $request->subject, $request->message));
+          $sent =  Mail::to('contact@momentocardgames.com')->send(new contactMail($request->name, $request->email, $request->sub, $request->mes));
         }
 
         if($sent){
