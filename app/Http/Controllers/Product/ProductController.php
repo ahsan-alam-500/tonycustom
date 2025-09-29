@@ -166,8 +166,7 @@ public function index(Request $request): JsonResponse
             ])->toArray();
         }
 
-        // $product->customizations = $customizations;
-        $product = $customizations;
+        $product->customizations = $customizations;
 
         return response()->json([
             'success' => true,
