@@ -36,13 +36,13 @@ class OrderController extends Controller
         }
 
         // Create order
-        $order = Order::create(['user_id' => $user->id, 'name' => $request->name, 'email' => $request->email, 'phone' => $request->phone, 'address' => $request->address, 'total' => $request->total, 'status' => $request->status ? ? 'pending', 'is_customized' => $request->is_customized ? ? false, 'customized_file' => $request->customized_file ? ? null, ]);
+        $order = Order::create(['user_id' => $user->id, 'name' => $request->name, 'email' => $request->email, 'phone' => $request->phone, 'address' => $request->address, 'total' => $request->total, 'status' => $request->status ?? 'pending', 'is_customized' => $request->is_customized ?? false, 'customized_file' => $request->customized_file ?? null, ]);
 
         // Attach order items
         foreach ($request->order_items as $item)
         {
             $order->orderItems()
-                ->create(['product_id' => $item['product_id'], 'quantity' => $item['quantity'], 'price' => $item['price'] ? ? 0, ]);
+                ->create(['product_id' => $item['product_id'], 'quantity' => $item['quantity'], 'price' => $item['price'] ?? 0, ]);
         }
 
         return response()->json(['success' => true, 'status' => 201, 'message' => 'Order created successfully', 'data' => ['order' => $order->load('orderItems.product') , ], ]);
