@@ -512,21 +512,21 @@ class ProductController extends Controller
                     $product->{$relation}()->delete();
                 }
 
-                // এখন প্রতিটা $itemData হলো সরাসরি string (base64 image)
+                // Every $itemData directly being string (base 64 image)
                 foreach ($request->$relation as $index => $imageBase64) {
                     $path = $this->saveBase64Image(
                         $imageBase64,
                         "products/customizations/{$relation}"
                     );
 
-                    // relation এ নতুন record তৈরি
+                    // New record to relation
                     $item = $product->{$relation}()->create([
                         "name" => ucfirst($relation) . " " . ($index + 1), // auto name generate
                         "product_id" => $product->id,
                         "image" => $path,
                     ]);
 
-                    // যদি একাধিক image লাগতো, তখন এখানে $item->images()->create() দিয়ে করতে পারতে
+                    // If needed more images for customization then add here $item->images()->create()
                 }
             }
         }

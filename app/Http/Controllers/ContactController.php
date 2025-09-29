@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\contactMail;
 use App\Models\Contact;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
@@ -23,6 +25,11 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $contact = Contact::create($request->all());
+
+        if($contact){
+            Mail::to('contact@momentocardgames.com')->send(new contactMail($request->name, $request->email, $request->subject, $request->message));
+        }
+
         return response()->json([
             'success' => true,
             'status'  => 200,
