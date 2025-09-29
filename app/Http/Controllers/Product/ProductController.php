@@ -141,9 +141,9 @@ public function index(Request $request): JsonResponse
             \Log::info($product);
             if ($product->type === 'customizable') {
                 $product->load([
-                    'skin_tones.images', 'hairs.images', 'noses.images',
-                    'eyes.images', 'mouths.images', 'dresses.images',
-                    'crowns.images', 'base_cards.images', 'beards.images',
+                    'skin_tones.image', 'hairs.image', 'noses.image',
+                    'eyes.image', 'mouths.image', 'dresses.image',
+                    'crowns.image', 'base_cards.image', 'beards.image',
                 ]);
             }
 
