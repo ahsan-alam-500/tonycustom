@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\contactMail;
 use App\Models\Contact;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
@@ -31,7 +32,7 @@ class ContactController extends Controller
         }
 
         if($sent){
-            \Log::info('Email sent successfully');
+            Log::info('Email sent successfully');
         }
 
         return response()->json([
