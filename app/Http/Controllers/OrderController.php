@@ -48,7 +48,7 @@ class OrderController extends Controller
         return response()->json(['success' => true, 'status' => 201, 'message' => 'Order created successfully', 'data' => ['order' => $order->load('orderItems.product') , ], ]);
     }
 
-    // Optional: show a single order
+    // Optional: show a single order though its optional it should be implemented
     public function show($id)
     {
         $user = Auth::user();
