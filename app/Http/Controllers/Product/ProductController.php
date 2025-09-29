@@ -42,7 +42,7 @@ public function index(Request $request): JsonResponse
             // Main image
             if ($p->image) {
                 $p->image = Str::startsWith($p->image, ['http://','https://'])
-                    ? $p->image
+                    ? 'public/'.$p->image
                     : url('public/storage/' . $p->image);
             }
 
@@ -52,7 +52,7 @@ public function index(Request $request): JsonResponse
                     return [
                         'id' => $img->id,
                         'url' => Str::startsWith($img->image, ['http://','https://'])
-                            ? $img->image
+                            ? 'public/'.$img->image
                             : url('public/storage/' . $img->image),
                         'alt' => $img->alt ?? null,
                     ];
