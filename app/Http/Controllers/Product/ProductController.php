@@ -41,7 +41,7 @@ public function index(Request $request): JsonResponse
             if ($p->image) {
                 $p->image = Str::startsWith($p->image, ['http://','https://'])
                     ? $p->image
-                    : 'storage/' . ltrim($p->image, '/');
+                    : 'public/storage/' . ltrim($p->image, '/');
             }
 
             // Gallery images
@@ -51,7 +51,7 @@ public function index(Request $request): JsonResponse
                         'id' => $img->id,
                         'url' => Str::startsWith($img->image, ['http://','https://'])
                             ? $img->image
-                            : 'storage/' . ltrim($img->image, '/'),
+                            : 'public/storage/' . ltrim($img->image, '/'),
                         'alt' => $img->alt ?? null,
                     ];
                 })->toArray();
@@ -69,7 +69,7 @@ public function index(Request $request): JsonResponse
                                 'id' => $item->id,
                                 'name' => $item->name,
                                 'image' => $item->image
-                                    ? 'storage/'.$item->image
+                                    ? 'public/storage/'.$item->image
                                     : null,
                             ];
                         })->toArray();
