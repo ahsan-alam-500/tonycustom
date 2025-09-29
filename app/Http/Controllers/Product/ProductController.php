@@ -22,7 +22,6 @@ class ProductController extends Controller
 public function index(Request $request): JsonResponse
 {
     try {
-        // Fetch products with relations
         $products = Product::with([
             'category',
             'images',
@@ -36,7 +35,6 @@ public function index(Request $request): JsonResponse
         ->latest()
         ->paginate($request->get('per_page', 15));
 
-        // Transform collection to add full URLs with public/storage
         $products->getCollection()->transform(function ($p) {
 
             // Main image
@@ -55,7 +53,7 @@ public function index(Request $request): JsonResponse
                 })->toArray();
             }
 
-            // Customizable options
+            // Customizations
             if ($p->type === 'customizable') {
                 $relations = ['skin_tones','hairs','noses','eyes','mouths','dresses','crowns','base_cards','beards'];
                 $customizations = [];
