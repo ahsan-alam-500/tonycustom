@@ -27,7 +27,19 @@ class OrderController extends Controller
         $user = Auth::user();
 
         // Validate request
-        $validator = Validator::make($request->all() , ['name' => 'required|string|max:255', 'email' => 'required|email', 'phone' => 'required|string|max:50', 'address' => 'required|string|max:500', 'total' => 'required|numeric|min:0', 'is_customized' => 'boolean', 'customized_file' => 'nullable|string', 'status' => 'nullable|string|in:pending,completed,cancelled', 'order_items' => 'required|array|min:1', 'order_items.*.product_id' => 'required|exists:products,id', 'order_items.*.quantity' => 'required|integer|min:1', ]);
+        $validator = Validator::make($request->all() , [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone' => 'required|string|max:50',
+            'address' => 'required|string|max:500',
+            'total' => 'required|numeric|min:0',
+            'is_customized' => 'boolean',
+            'customized_file' => 'nullable|string',
+            'status' => 'nullable|string|in:pending,completed,cancelled',
+            'order_items' => 'required|array|min:1',
+            'order_items.*.product_id' => 'required|exists:products,id',
+            'order_items.*.quantity' => 'required|integer|min:1',
+        ]);
 
         if ($validator->fails())
         {
