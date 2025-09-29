@@ -139,9 +139,7 @@ public function index(Request $request): JsonResponse
     try {
         $product = Product::with([
             'category',
-            'images',
-            'skin_tones', 'hairs', 'noses', 'eyes', 'mouths',
-            'dresses', 'crowns', 'base_cards', 'beards'
+            'images'
         ])
         ->where('slug', $slug)
         ->firstOrFail();
