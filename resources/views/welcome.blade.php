@@ -81,7 +81,7 @@
     <div class="background"></div>
     <div class="container">
         <h1>FORBIDDEN AREA</h1>
-        <p>Epic moment. Proceed at your own risk!</p>
+        <p>Proceed at your own risk! Your system can be hacked</p>
     </div>
 </body>
 
