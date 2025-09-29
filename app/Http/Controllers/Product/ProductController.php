@@ -358,42 +358,23 @@ private function handleCustomizations(Product $product, Request $request, bool $
                 $product->{$relation}()->delete();
             }
 
-            // Loop over incoming items
-            foreach ($request->$relation as $itemData) {
-                $images = $itemData['images'] ?? null;
+            // এখন প্রতিটা $itemData হলো সরাসরি string (base64 image)
+            foreach ($request->$relation as $index => $imageBase64) {
+                $path = $this->saveBase64Image($imageBase64, "products/customizations/{$relation}");
 
-                // এক্ষেত্রে images array বা string হতে পারে
-                if (is_array($images) && !empty($images)) {
-                    $mainImage = $this->saveBase64Image($images[0], "products/customizations/{$relation}");
-                } elseif (is_string($images) && !empty($images)) {
-                    $mainImage = $this->saveBase64Image($images, "products/customizations/{$relation}");
-                    $images = [$images]; // পরে loop চালাতে সুবিধা হবে
-                } else {
-                    $mainImage = null;
-                    $images = [];
-                }
-
-                // Create main item record
+                // relation এ নতুন record তৈরি
                 $item = $product->{$relation}()->create([
-                    'name' => $itemData['name'] ?? '',
+                    'name' => ucfirst($relation) . ' ' . ($index + 1), // auto name generate
                     'product_id' => $product->id,
-                    'image' => $mainImage,
+                    'image' => $path
                 ]);
 
-                // Loop over images array if exists
-                foreach ($images as $index => $imageBase64) {
-                    $path = $this->saveBase64Image($imageBase64, "products/customizations/{$relation}");
-                    $item->images()->create(['image' => $path]);
-
-                    // যদি main image column nullable না হয়, প্রথম image এখানে set করতে পারো
-                    if ($index === 0 && $item->image === null) {
-                        $item->update(['image' => $path]);
-                    }
-                }
+                // যদি একাধিক image লাগতো, তখন এখানে $item->images()->create() দিয়ে করতে পারতে
             }
         }
     }
 }
+
 
 
 
