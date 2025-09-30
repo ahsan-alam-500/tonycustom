@@ -95,7 +95,7 @@ class ProductController extends Controller
                                 "name" => $item->name,
                                 "image" => $item->image
                                     ? "storage/" . ltrim($item->image, "/")
-                                    : "Somossa Ache",
+                                    : "Something Went Wrong",
                             ]
                         )
                         ->toArray();
