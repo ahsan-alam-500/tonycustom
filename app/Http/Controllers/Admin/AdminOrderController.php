@@ -53,7 +53,6 @@ class AdminOrderController extends Controller
             return $this->errorResponse('Order not found', 404);
         }
     }
-
     /**
      * Update order status.
      */
