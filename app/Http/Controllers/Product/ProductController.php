@@ -55,7 +55,7 @@ class ProductController extends Controller
                 ->paginate($request->get("per_page", 15));
 
             $products->getCollection()->transform(function ($p) {
-                // Main product image
+                // Main product image url saving to database is relative
                 $p->image = $p->image
                     ? "storage/" . ltrim($p->image, "/")
                     : null;
