@@ -34,6 +34,8 @@ class ProductController extends Controller
                 "crowns",
                 "base_cards",
                 "beards",
+                "trading_fronts",
+                "trading_backs",
             ])
                 ->when(
                     $request->category_id,
@@ -84,6 +86,8 @@ class ProductController extends Controller
                     "crowns",
                     "base_cards",
                     "beards",
+                    "trading_fronts",
+                    "trading_backs",
                 ];
                 $customizations = [];
 
@@ -215,6 +219,8 @@ class ProductController extends Controller
                 "crowns",
                 "base_cards",
                 "beards",
+                "trading_fronts",
+                "trading_backs",
             ];
             $customizations = [];
 
@@ -498,6 +504,8 @@ class ProductController extends Controller
             "crowns",
             "base_cards",
             "beards",
+            "trading_fronts",
+            "trading_backs",
         ];
 
         foreach ($relations as $relation) {
@@ -547,6 +555,8 @@ class ProductController extends Controller
             "crowns",
             "base_cards",
             "beards",
+            "trading_fronts",
+            "trading_backs",
         ];
 
         foreach ($relations as $relation) {
@@ -658,6 +668,8 @@ class ProductController extends Controller
                 "crowns",
                 "base_cards",
                 "beards",
+                "trading_fronts",
+                "trading_backs",
             ];
 
             foreach ($relations as $relation) {
