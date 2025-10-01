@@ -74,6 +74,15 @@ class Product extends Model
         return $this->hasMany(Beard::class);
     }
 
+    public function trading_fronts()
+    {
+        return $this->hasMany(TradingFront::class);
+    }
+
+    public function trading_backs()
+    {
+        return $this->hasMany(TradingBack::class);
+    }
 
 
 
