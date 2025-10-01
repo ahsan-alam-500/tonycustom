@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('slug');
             $table->string('image')->nullable();
             $table->text('short_description')->nullable();
-            $table->enum('type', ['simple', 'customizable'])->default('simple');
+            $table->enum('type', ['simple','customizable','Treding'])->default('simple');
             $table->text('description')->nullable();
             $table->decimal('price', 8, 2);
             $table->decimal('offer_price', 8, 2);
