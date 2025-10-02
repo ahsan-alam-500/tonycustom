@@ -377,17 +377,26 @@ class ProductController extends Controller
                     "trading_backs",
                 ];
 
-                foreach ($relations as $relation) {
-                    foreach ($product->{$relation} as $item) {
-                        if ($item->image) {
-                            Storage::disk("public")->delete($item->image);
-                        }
-                    }
-                    // Delete all customization records
-                    $product->{$relation}()->delete();
-                }
-            }
+                // foreach ($relations as $relation) {
+                //     foreach ($product->{$relation} as $item) {
+                //         if ($item->image) {
+                //             Storage::disk("public")->delete($item->image);
+                //         }
+                //     }
+                //     // Delete all customization records
+                //     $product->{$relation}()->delete();
+                // }
 
+                foreach ($relations as $relation) {
+    foreach ($product->{$relation} as $item) {
+        if ($item->image) {
+            Storage::disk("public")->delete($item->image);
+        }
+        $item->delete(); // instead of bulk delete
+    }
+}
+
+            }
             // Delete the product
             $product->delete();
 
