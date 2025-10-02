@@ -411,7 +411,7 @@ class ProductController extends Controller
             "slug" =>
                 "nullable|string|unique:products,slug" .
                 ($productId ? "," . $productId : ""),
-            "type" => "required|in:Simple,Customizable,Trading",
+           "type" => "required|string|in:simple,customizable,trading,Simple,Customizable,Trading",
             "price" => "required|numeric|min:0",
             "status" => "required|boolean",
             "offer_price" => "nullable|numeric|min:0|lt:price",
