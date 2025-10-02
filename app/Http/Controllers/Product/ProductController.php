@@ -155,6 +155,9 @@ class ProductController extends Controller
             }
 
             // customizations
+            if ($product->type === "Treding") {
+                $this->handleCustomizations($product, $request);
+            }
             if ($product->type === "customizable") {
                 $this->handleCustomizations($product, $request);
             }
