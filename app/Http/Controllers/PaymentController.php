@@ -28,7 +28,11 @@ class PaymentController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $payments,
+            'status' => 200,
+            'message' => 'Payments fetched successfully.',
+            'data' => [
+                'payments' => $payments
+            ],
         ]);
     }
 
