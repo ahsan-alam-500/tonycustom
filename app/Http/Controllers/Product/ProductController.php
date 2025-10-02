@@ -423,7 +423,7 @@ class ProductController extends Controller
             "images.*" => "required|string",
         ];
 
-        if ($request->type === "Customizable") {
+        if ($request->type === "Customizable" || $request->type === "Trading") {
             $customFields = [
                 "base_cards",
                 "skin_tones",
@@ -434,6 +434,8 @@ class ProductController extends Controller
                 "dresses",
                 "crowns",
                 "beards",
+                "trading_fronts",
+                "trading_backs",
             ];
 
             foreach ($customFields as $field) {
