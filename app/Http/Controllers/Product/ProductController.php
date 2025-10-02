@@ -332,40 +332,11 @@ class ProductController extends Controller
      * Delete product.
      */
 
-public function destroy($id): JsonResponse
-{
-    try {
-        $product = Product::with([
-            "images",
-            "skin_tones",
-            "hairs",
-            "noses",
-            "eyes",
-            "mouths",
-            "dresses",
-            "crowns",
-            "base_cards",
-            "beards",
-            "trading_fronts",
-            "trading_backs",
-        ])->findOrFail($id);
-
-        DB::beginTransaction();
-
-        // Delete main product image
-        if ($product->image) {
-            Storage::disk("public")->delete($product->image);
-        }
-
-        // Delete gallery images
-        foreach ($product->images as $image) {
-            Storage::disk("public")->delete($image->image);
-            $image->delete();
-        }
-
-        // Delete customizable images and related records individually
-        if ($product->type === "customizable") {
-            $relations = [
+    public function destroy($id): JsonResponse
+    {
+        try {
+            $product = Product::with([
+                "images",
                 "skin_tones",
                 "hairs",
                 "noses",
@@ -377,127 +348,64 @@ public function destroy($id): JsonResponse
                 "beards",
                 "trading_fronts",
                 "trading_backs",
-            ];
+            ])->findOrFail($id);
 
-            foreach ($relations as $relation) {
-                foreach ($product->{$relation} as $item) {
-                    // Delete associated image if exists
-                    if ($item->image) {
-                        Storage::disk("public")->delete($item->image);
-                    }
-                    // Delete the record individually
-                    $item->delete();
-                }
+            DB::beginTransaction();
+
+            // Delete main product image
+            if ($product->image) {
+                Storage::disk("public")->delete($product->image);
             }
+
+            // Delete gallery images
+            foreach ($product->images as $image) {
+                Storage::disk("public")->delete($image->image);
+            }
+
+            // Delete customizable images
+            if ($product->type === "customizable") {
+                $relations = [
+                    "skin_tones",
+                    "hairs",
+                    "noses",
+                    "eyes",
+                    "mouths",
+                    "dresses",
+                    "crowns",
+                    "base_cards",
+                    "beards",
+                    "trading_fronts",
+                    "trading_backs",
+                ];
+
+                foreach ($relations as $relation) {
+                    foreach ($product->{$relation} as $item) {
+                        if ($item->image) {
+                            Storage::disk("public")->delete($item->image);
+                        }
+                    }
+                    // Delete all customization records
+                    $product->{$relation}()->delete();
+                }
+
+            }
+
+            DB::table('trading_fronts')->where('product_id', $product->id)->delete();
+            DB::table('trading_backs')->where('product_id', $product->id)->delete();
+            // Delete the product
+            $product->delete();
+
+            DB::commit();
+
+            return $this->successResponse("Product deleted successfully");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse(
+                "Failed to delete product: " . $e->getMessage(),
+                500
+            );
         }
-
-        // Finally, delete the product itself
-        $product->delete();
-
-        DB::commit();
-
-        return response()->json([
-            "success" => true,
-            "status" => 200,
-            "message" => "Product deleted successfully",
-        ]);
-    } catch (Exception $e) {
-        DB::rollBack();
-        return response()->json([
-            "success" => false,
-            "status" => 500,
-            "message" => "Failed to delete product: " . $e->getMessage(),
-        ]);
     }
-}
-
-
-
-
-    // public function destroy($id): JsonResponse
-    // {
-    //     try {
-    //         $product = Product::with([
-    //             "images",
-    //             "skin_tones",
-    //             "hairs",
-    //             "noses",
-    //             "eyes",
-    //             "mouths",
-    //             "dresses",
-    //             "crowns",
-    //             "base_cards",
-    //             "beards",
-    //             "trading_fronts",
-    //             "trading_backs",
-    //         ])->findOrFail($id);
-
-    //         DB::beginTransaction();
-
-    //         // Delete main product image
-    //         if ($product->image) {
-    //             Storage::disk("public")->delete($product->image);
-    //         }
-
-    //         // Delete gallery images
-    //         foreach ($product->images as $image) {
-    //             Storage::disk("public")->delete($image->image);
-    //         }
-
-    //         // Delete customizable images
-    //         if ($product->type === "customizable") {
-    //             $relations = [
-    //                 "skin_tones",
-    //                 "hairs",
-    //                 "noses",
-    //                 "eyes",
-    //                 "mouths",
-    //                 "dresses",
-    //                 "crowns",
-    //                 "base_cards",
-    //                 "beards",
-    //                 "trading_fronts",
-    //                 "trading_backs",
-    //             ];
-
-    //             // foreach ($relations as $relation) {
-    //             //     foreach ($product->{$relation} as $item) {
-    //             //         if ($item->image) {
-    //             //             Storage::disk("public")->delete($item->image);
-    //             //         }
-    //             //     }
-    //             //     // Delete all customization records
-    //             //     $product->{$relation}()->delete();
-    //             // }
-
-    //             foreach ($relations as $relation) {
-    //                 foreach ($product->{$relation} as $item) {
-    //                     // Delete associated image if exists
-    //                     if ($item->image) {
-    //                         Storage::disk("public")->delete($item->image);
-    //                     }
-
-    //                     // Delete the record safely
-    //                     $item->delete();
-    //                 }
-    //             }
-
-
-    //         }
-    //         // Delete the product
-    //         $product->delete();
-
-    //         DB::commit();
-
-    //         return $this->successResponse("Product deleted successfully");
-    //     } catch (Exception $e) {
-    //         DB::rollBack();
-    //         return $this->errorResponse(
-    //             "Failed to delete product: " . $e->getMessage(),
-    //             500
-    //         );
-    //     }
-    // }
 
     /**
      * Validation rules.
