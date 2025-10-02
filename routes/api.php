@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 
 // Public routes
 Route::post('register', [AuthController::class, 'register']);
@@ -68,3 +69,4 @@ Route::delete('contacts/{id}', [ContactController::class, 'destroy']);
 Route::post('contact', [ContactController::class, 'store']);
 Route::get('shop', [ProductController::class, 'index']);
 Route::get('shop/{slug}', [ProductController::class, 'show']);
+Route::apiResource('payments', PaymentController::class);
