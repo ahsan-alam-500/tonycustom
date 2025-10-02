@@ -388,13 +388,17 @@ class ProductController extends Controller
                 // }
 
                 foreach ($relations as $relation) {
-    foreach ($product->{$relation} as $item) {
-        if ($item->image) {
-            Storage::disk("public")->delete($item->image);
-        }
-        $item->delete(); // instead of bulk delete
-    }
-}
+                    foreach ($product->{$relation} as $item) {
+                        // Delete associated image if exists
+                        if ($item->image) {
+                            Storage::disk("public")->delete($item->image);
+                        }
+
+                        // Delete the record safely
+                        $item->delete();
+                    }
+                }
+
 
             }
             // Delete the product
