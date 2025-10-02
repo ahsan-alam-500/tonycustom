@@ -8,6 +8,7 @@ class TradingFront extends Model
 {
     protected $table = 'trading_fronts';
     protected $fillable=[
+        'name',
         'image',
         'product_id'
     ];
