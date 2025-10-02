@@ -155,7 +155,7 @@ class ProductController extends Controller
             }
 
             // customizations
-            if ($product->type === "Treding") {
+            if ($product->type === "trading") {
                 $this->handleCustomizations($product, $request);
             }
             if ($product->type === "customizable") {
@@ -411,7 +411,7 @@ class ProductController extends Controller
             "slug" =>
                 "nullable|string|unique:products,slug" .
                 ($productId ? "," . $productId : ""),
-            "type" => "required|in:Simple,Customizable",
+            "type" => "required|in:Simple,Customizable,Trading",
             "price" => "required|numeric|min:0",
             "status" => "required|boolean",
             "offer_price" => "nullable|numeric|min:0|lt:price",
