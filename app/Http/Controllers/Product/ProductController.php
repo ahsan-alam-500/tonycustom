@@ -345,6 +345,8 @@ class ProductController extends Controller
                 "crowns",
                 "base_cards",
                 "beards",
+                "trading_fronts",
+                "trading_backs",
             ])->findOrFail($id);
 
             DB::beginTransaction();
