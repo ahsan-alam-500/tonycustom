@@ -70,7 +70,7 @@ class OrderController extends Controller
 
             // Payment validation
             'payment_method'    => 'required|string|in:cash,cod,card,stripe,bkash',
-            'payment_status'    => 'required|string|in:pending,completed,failed',
+            'payment_status'    => 'nullable|string|in:pending,completed,failed',
             'transaction_id'    => 'nullable|string|max:100',
             'notes'             => 'nullable|string',
         ]);

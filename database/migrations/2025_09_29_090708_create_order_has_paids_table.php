@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('restrict')->onUpdate('cascade');
             $table->decimal('amount', 8, 2);
             $table->string('method');
-            $table->enum('status', ['pending', 'completed'])->default('pending');
+            $table->enum('status', ['pending', 'completed','failed'])->default('pending');
             $table->string('transaction_id')->nullable();
             $table->string('notes')->nullable();
             $table->timestamps();
