@@ -20,7 +20,7 @@ class AdminOrderController extends Controller
         // Authorization using Gate/Policy (better approach)
         try {
             // Query optimization with pagination
-            $orders = Order::with(['product','orderItems', 'user:id,name,email'])
+            $orders = Order::with(['orderItems.product', 'user:id,name,email'])
                 ->when($request->status, function ($query) use ($request) {
                     $query->where('status', $request->status);
                 })
