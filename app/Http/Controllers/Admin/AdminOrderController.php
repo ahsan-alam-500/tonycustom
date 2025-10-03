@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,7 @@ class AdminOrderController extends Controller
         // Authorization using Gate/Policy (better approach)
         try {
             // Query optimization with pagination
-            $orders = Order::with(['orderItems', 'user:id,name,email'])
+            $orders = Order::with(['product','orderItems', 'user:id,name,email'])
                 ->when($request->status, function ($query) use ($request) {
                     $query->where('status', $request->status);
                 })
