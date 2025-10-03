@@ -56,27 +56,28 @@ class AdminOrderController extends Controller
     /**
      * Update order status.
      */
-    public function update(Request $request, Order $order): JsonResponse
-    {
-        $request->validate([
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled'
+public function update(Request $request, Order $order): JsonResponse
+{
+    $request->validate([
+        'status' => 'required|in:pending,processing,shipped,delivered,cancelled'
+    ]);
+
+    try {
+        $order->update([
+            'status' => $request->status,
+            'updated_by' => Auth::user()->id
         ]);
 
-        try {
-            $order->update([
-                'status' => $request->status,
-                'updated_by' => Auth::user()->id
-            ]);
+        return $this->successResponse(
+            'Order status updated successfully',
+            new OrderResource($order)
+        );
 
-            return $this->successResponse(
-                'Order status updated successfully',
-                new OrderResource($order)
-            );
-
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update order status', 500);
-        }
+    } catch (\Exception $e) {
+        return $this->errorResponse('Failed to update order status', 500);
     }
+}
+
 
     /**
      * Return success response.
