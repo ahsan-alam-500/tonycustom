@@ -28,7 +28,7 @@ class OrderResource extends JsonResource
                 return asset('storage/' . $this->customized_file);
             }),
             'payment_status' => $this->is_paid ? 'Paid' : 'Pending',
-            'order_type' => $this->is_customized ? 'Customized' : 'Standard',
+            'order_type' => $this->is_customized ? 'Customized' : 'Simple',
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
             'items' => OrderItemResource::collection($this->whenLoaded('orderItems')),
