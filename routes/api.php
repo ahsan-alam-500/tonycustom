@@ -35,7 +35,7 @@ Route::middleware('auth:api')->group(function () {
 Route::apiResource('categories',CategoryController::class);
 Route::apiResource('products',ProductController::class);
 Route::resource('orders', AdminOrderController::class)
-    ->only(['index', 'show', 'status']);
+    ->only(['index', 'show', 'update']);
 
 
 
