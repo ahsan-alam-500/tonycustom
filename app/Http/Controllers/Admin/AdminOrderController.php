@@ -56,7 +56,7 @@ class AdminOrderController extends Controller
     /**
      * Update order status.
      */
-    public function updateStatus(Request $request, Order $order): JsonResponse
+    public function status(Request $request, Order $order): JsonResponse
     {
         $request->validate([
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled'
