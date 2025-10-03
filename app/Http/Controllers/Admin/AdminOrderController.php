@@ -33,7 +33,7 @@ class AdminOrderController extends Controller
             );
 
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve orders', 500);
+        return $this->errorResponse('Failed to retrieve orders: ' . $e->getMessage(), 500);
         }
     }
 
