@@ -59,7 +59,7 @@ class AdminOrderController extends Controller
 public function update(Request $request, Order $order): JsonResponse
 {
     $request->validate([
-        'status' => 'required|in:pending,processing,shipped,delivered,cancelled'
+        'status' => 'required|in:pending,completed',
     ]);
 
     try {
