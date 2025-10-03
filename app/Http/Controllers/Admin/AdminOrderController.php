@@ -56,27 +56,81 @@ class AdminOrderController extends Controller
     /**
      * Update order status.
      */
-public function update(Request $request, Order $order): JsonResponse
-{
-    $request->validate([
-        'status' => 'required|in:pending,completed',
-    ]);
+    public function update(Request $request, Order $order): JsonResponse
+    {
+        $request->validate([
+            'name'          => 'sometimes|nullable|string|max:255',
+            'email'         => 'sometimes|nullable|email',
+            'phone'         => 'sometimes|nullable|string|max:20',
+            'address'       => 'sometimes|nullable|string|max:500',
+            'status'        => 'sometimes|nullable|in:pending,completed',
+            'is_paid'       => 'sometimes|boolean',
+            'is_customized' => 'sometimes|boolean',
 
-    try {
-        $order->update([
-            'status' => $request->status,
-            'updated_by' => Auth::user()->id
+            // Nested validations
+            'items'                  => 'sometimes|array',
+            'items.*.id'             => 'sometimes|exists:order_items,id',
+            'items.*.product_id'     => 'required_with:items.*|exists:products,id',
+            'items.*.quantity'       => 'required_with:items.*|integer|min:1',
+
+            'payments'               => 'sometimes|array',
+            'payments.*.id'          => 'sometimes|exists:order_has_paids,id',
+            'payments.*.amount'      => 'sometimes|numeric|min:0',
+            'payments.*.method'      => 'sometimes|string',
+            'payments.*.status'      => 'sometimes|in:pending,completed,failed',
+            'payments.*.transaction_id' => 'nullable|string',
+            'payments.*.notes'       => 'nullable|string',
         ]);
 
-        return $this->successResponse(
-            'Order status updated successfully',
-            new OrderResource($order)
-        );
 
-    } catch (\Exception $e) {
-        return $this->errorResponse('Failed to update order status', 500);
+        try {
+            // ✅ Update the main order
+            $order->update($request->only([
+                'name','email','phone','address','status','is_paid','is_customized'
+            ]) + ['updated_by' => Auth::user()->id]);
+
+            // ✅ Update order items if provided
+            if ($request->has('items')) {
+                foreach ($request->items as $item) {
+                    if (isset($item['id'])) {
+                        // Update existing item
+                        $orderItem = $order->orderItems()->find($item['id']);
+                        if ($orderItem) {
+                            $orderItem->update($item);
+                        }
+                    } else {
+                        // Create new item
+                        $order->orderItems()->create($item);
+                    }
+                }
+            }
+
+            // ✅ Update payments if provided
+            if ($request->has('payments')) {
+                foreach ($request->payments as $payment) {
+                    if (isset($payment['id'])) {
+                        $orderPayment = $order->orderHasPaids()->find($payment['id']);
+                        if ($orderPayment) {
+                            $orderPayment->update($payment);
+                        }
+                    } else {
+                        $order->orderHasPaids()->create($payment);
+                    }
+                }
+            }
+
+            $order->load(['orderItems.product', 'orderHasPaids', 'user']);
+
+            return $this->successResponse(
+                'Order updated successfully',
+                new OrderResource($order)
+            );
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to update order: '.$e->getMessage(), 500);
+        }
     }
-}
+
 
 
     /**
