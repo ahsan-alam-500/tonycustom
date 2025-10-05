@@ -51,4 +51,15 @@ class User extends Authenticatable implements JWTSubject
             'role' => $this->role,
         ];
     }
+
+
+    //table relations
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+    public function preOrderMappers()
+    {
+        return $this->hasMany(PreOrderMapper::class);
+    }
 }

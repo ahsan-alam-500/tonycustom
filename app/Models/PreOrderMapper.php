@@ -18,4 +18,8 @@ class PreOrderMapper extends Model
     {
         return $this->belongsTo(Product::class, 'productId');
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'userId');
+    }
 }
