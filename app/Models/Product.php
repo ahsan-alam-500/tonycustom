@@ -84,6 +84,11 @@ class Product extends Model
         return $this->hasMany(TradingBack::class);
     }
 
+    public function PreOrderMapper()
+    {
+        return $this->hasMany(PreOrderMapper::class);
+    }
+
 
 
 }
