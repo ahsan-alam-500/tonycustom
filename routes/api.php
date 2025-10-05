@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\OtpController;
+use App\Http\Controllers\PreOrderController;
 use App\Http\Controllers\Product\CategoryController;
 use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -46,6 +47,7 @@ Route::resource('orders', AdminOrderController::class)
 //============================Customer can handle=======================
 //======================================================================
 
+Route::apiResource('preorders', PreOrderController::class);
 Route::apiResource('customer-orders', OrderController::class);
 
 

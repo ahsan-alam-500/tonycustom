@@ -8,6 +8,7 @@ class PreOrderMapper extends Model
 {
     protected $table = 'pre_order_mappers';
     protected $fillable = [
+        'userId',
         'productId',
         'productQuantity',
         'FinalProduct'

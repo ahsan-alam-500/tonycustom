@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('pre_order_mappers', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('userId');
             $table->unsignedBigInteger('productId');
             $table->integer('productQuantity');
             $table->json('FinalProduct');
+            $table->foreign('userId')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('productId')->references('id')->on('products')->onDelete('cascade');
             $table->timestamps();
         });
