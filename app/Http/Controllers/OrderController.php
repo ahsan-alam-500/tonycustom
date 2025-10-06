@@ -141,31 +141,22 @@ class OrderController extends Controller
     //     }
     // }
 
-    public function store(Request $request)
+public function store(Request $request)
 {
     $user = Auth::user();
 
     // Validate request
     $validator = Validator::make($request->all(), [
-        // Order validation
         'name'              => 'required|string|max:255',
         'email'             => 'required|email',
         'phone'             => 'required|string|max:50',
         'address'           => 'required|string|max:500',
-        'total'             => 'required|numeric|min:0',
-        'is_customized'     => 'boolean',
-        'customized_file'   => 'nullable|string',
-        'status'            => 'nullable|string|in:pending,completed,cancelled',
-
-        // Order items validation
-        'order_items'                   => 'required|array|min:1',
-        'order_items.*.product_id'      => 'required|exists:products,id',
-        'order_items.*.quantity'        => 'required|integer|min:1',
-        'order_items.*.price'           => 'nullable|numeric|min:0',
-        'order_items.*.FinalPDF'        => 'nullable|string', // Base64 or path
-        'order_items.*.FinalProduct'    => 'nullable|array', // images array
-
-        // Payment validation
+        'order_items'       => 'required|array|min:1',
+        'order_items.*.product_id'   => 'required|exists:products,id',
+        'order_items.*.quantity'     => 'required|integer|min:1',
+        'order_items.*.price'        => 'nullable|numeric|min:0',
+        'order_items.*.FinalPDF'     => 'nullable|array', // size, type, data
+        'order_items.*.FinalProduct' => 'nullable|array',
         'payment_method'    => 'required|string|in:cash,cod,card,stripe,bkash',
         'payment_status'    => 'nullable|string|in:pending,completed,failed',
         'transaction_id'    => 'nullable|string|max:100',
@@ -184,46 +175,61 @@ class OrderController extends Controller
     DB::beginTransaction();
 
     try {
-        // Create main order
+        $total = 0;
+
+        // Create initial order (total will be updated after calculating)
         $order = Order::create([
-            'user_id'         => $user->id,
-            'name'            => $request->name,
-            'email'           => $request->email,
-            'phone'           => $request->phone,
-            'address'         => $request->address,
-            'total'           => $request->total,
-            'status'          => $request->status ?? 'pending',
-            'is_customized'   => $request->is_customized ?? false,
-            'customized_file' => $request->customized_file ?? null,
+            'user_id' => $user->id,
+            'name'    => $request->name,
+            'email'   => $request->email,
+            'phone'   => $request->phone,
+            'address' => $request->address,
+            'total'   => 0, // placeholder
+            'status'  => 'pending',
         ]);
 
-        // Attach order items
         foreach ($request->order_items as $item) {
+            $quantity = $item['quantity'] ?? 0;
+            $price    = $item['price'] ?? 0;
+
+            // Update total
+            $total += $quantity * $price;
+
+            // Create order item
             $orderItem = $order->orderItems()->create([
                 'product_id' => $item['product_id'],
-                'quantity'   => $item['quantity'],
-                'price'      => $item['price'] ?? 0,
+                'quantity'   => $quantity,
+                'price'      => $price,
             ]);
 
-            // If customized -> save FinalPDF in order table
-            if (!empty($item['FinalPDF'])) {
-                $order->update([
-                    'is_customized'   => true,
-                    'customized_file' => $item['FinalPDF'], // Base64 or uploaded path
-                ]);
-            }
-
-            // If FinalProduct images exist -> save in order_items
+            // Save FinalProduct images if exist
             if (!empty($item['FinalProduct'])) {
                 $orderItem->update([
                     'customization_images' => json_encode($item['FinalProduct']),
                 ]);
             }
+
+            // Save FinalPDF if exist → decode base64 and save file
+            if (!empty($item['FinalPDF']['data'])) {
+                $pdfData = base64_decode($item['FinalPDF']['data']);
+                $fileName = 'custom_pdf_' . time() . '_' . $item['product_id'] . '.pdf';
+                $filePath = 'customized_files/' . $fileName;
+
+                Storage::disk('public')->put($filePath, $pdfData);
+
+                $order->update([
+                    'is_customized'   => true,
+                    'customized_file' => $filePath, // Save PDF path
+                ]);
+            }
         }
 
-        // Payment trace
+        // Update order total
+        $order->update(['total' => $total]);
+
+        // Payment record
         $order->orderHasPaids()->create([
-            'amount'         => $order->total,
+            'amount'         => $total,
             'method'         => $request->payment_method,
             'status'         => $request->payment_status,
             'transaction_id' => $request->transaction_id ?? null,
@@ -242,7 +248,6 @@ class OrderController extends Controller
         ]);
     } catch (\Exception $e) {
         DB::rollBack();
-
         return response()->json([
             'success' => false,
             'status'  => 500,
