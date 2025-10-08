@@ -156,7 +156,7 @@ public function store(Request $request)
         'order_items.*.product_id'   => 'required|exists:products,id',
         'order_items.*.quantity'     => 'required|integer|min:1',
         'order_items.*.price'        => 'nullable|numeric|min:0',
-        'order_items.*.FinalPDF'     => 'nullable|array', // size, type, data
+        'order_items.*.FinalPDF'     => 'nullable|array',
         'order_items.*.FinalProduct' => 'nullable|array',
         'payment_method'    => 'required|string|in:cash,cod,card,stripe,bkash',
         'payment_status'    => 'nullable|string|in:pending,completed,failed',
