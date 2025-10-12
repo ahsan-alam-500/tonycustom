@@ -41,7 +41,6 @@ Route::resource('orders', AdminOrderController::class)
 
 
 Route::get('subscribers', [SubscriberController::class, 'index']);
-Route::post('subscribers', [SubscriberController::class, 'store']);
 
 
 
@@ -75,3 +74,5 @@ Route::post('contact', [ContactController::class, 'store']);
 Route::get('shop', [ProductController::class, 'index']);
 Route::get('shop/{slug}', [ProductController::class, 'show']);
 Route::apiResource('payments', PaymentController::class);
+
+Route::post('subscribers', [SubscriberController::class, 'store']);
