@@ -8,16 +8,29 @@ use Illuminate\Http\Request;
 
 class SubscriberController extends Controller
 {
-    public function index(){
-        $users = User::all();
-        $subscribers = Subscriber::all();
-       return response()->json([
+    public function index()
+    {
+        $users = User::all()->map(function ($item) {
+            $item->type = 'user';
+            return $item;
+        });
+
+        $subscribers = Subscriber::all()->map(function ($item) {
+            $item->type = 'subscriber';
+            return $item;
+        });
+
+        // Merge both collections
+        $all = $users->merge($subscribers);
+
+        return response()->json([
             'success' => true,
             'status'  => 200,
-            'message' => 'Subscribers fetched successfully',
-            'data'    => ['users' => $users, 'subscribers' => $subscribers],
+            'message' => 'Users and Subscribers fetched successfully',
+            'data'    => $all,
         ]);
     }
+
 
     public function store(Request $request){
         $request->validate([
