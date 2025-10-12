@@ -137,6 +137,7 @@ class ProductController extends Controller
 
             $productData = $this->prepareProductData($validated);
             $productData["type"] = strtolower($validated["type"]);
+            $productData["status"] = true ? 1 : 0;
 
             $product = Product::create($productData);
 
