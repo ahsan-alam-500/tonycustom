@@ -6,6 +6,7 @@ use App\Http\Controllers\PreOrderController;
 use App\Http\Controllers\Product\CategoryController;
 use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SubscriberController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
@@ -39,7 +40,8 @@ Route::resource('orders', AdminOrderController::class)
     ->only(['index', 'show', 'update']);
 
 
-
+Route::get('subscribers', [SubscriberController::class, 'index']);
+Route::post('subscribers', [SubscriberController::class, 'store']);
 
 
 

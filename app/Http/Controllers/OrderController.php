@@ -185,7 +185,7 @@ public function store(Request $request)
             'email'   => $request->email,
             'phone'   => $request->phone,
             'address' => $request->address,
-            'total'   => 0, // placeholder
+            'total'   => 0,
             'status'  => 'pending',
         ]);
 
