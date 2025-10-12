@@ -11,13 +11,11 @@ class SubscriberController extends Controller
     public function index(){
         $users = User::all();
         $subscribers = Subscriber::all();
-
-        $emails = array_merge(Subscriber::pluck('email')->toArray(), User::pluck('email')->toArray());
-        return response()->json([
+       return response()->json([
             'success' => true,
             'status'  => 200,
             'message' => 'Subscribers fetched successfully',
-            'data'    => ['emails' => $emails],
+            'data'    => ['users' => $users, 'subscribers' => $subscribers],
         ]);
     }
 
