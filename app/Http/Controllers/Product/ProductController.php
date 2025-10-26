@@ -313,7 +313,7 @@ class ProductController extends Controller
      */
     private function saveBase64Image(string $base64Image, string $folder): string
     {
-        if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+    if(preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
             $imageData = substr($base64Image, strpos($base64Image, ',') + 1);
             $extension = strtolower($type[1]);
         } else {

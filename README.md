@@ -1,5 +1,7 @@
 # Avatar Customization API
 
+LPR
+
 This is a Laravel-based API for creating and customizing avatars. Users can register, log in, and customize their avatars with various features like beards, crowns, dresses, eyes, hair, mouths, noses, and skin tones.
 
 ## Features
